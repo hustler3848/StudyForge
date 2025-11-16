@@ -18,12 +18,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 const Header = () => (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm">
       <div className="container flex h-16 max-w-7xl items-center">
-        <Logo />
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium mx-auto">
-          <Link href="#features" className="text-foreground/60 transition-colors hover:text-foreground/80">Features</Link>
-          <Link href="#how-it-works" className="text-foreground/60 transition-colors hover:text-foreground/80">How it works</Link>
-          <Link href="#pricing" className="text-foreground/60 transition-colors hover:text-foreground/80">Pricing</Link>
-        </nav>
+        <div className="flex items-center gap-6">
+          <Logo />
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+            <Link href="#features" className="text-foreground/60 transition-colors hover:text-foreground/80">Features</Link>
+            <Link href="#how-it-works" className="text-foreground/60 transition-colors hover:text-foreground/80">How it works</Link>
+            <Link href="#pricing" className="text-foreground/60 transition-colors hover:text-foreground/80">Pricing</Link>
+          </nav>
+        </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
           <Link href="/signin" className={cn(buttonVariants({ variant: "ghost" }))}>Login</Link>
           <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Get Started</Link>
@@ -53,12 +55,12 @@ const HeroSection = () => (
          <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
           <Image
-            src="https://picsum.photos/seed/dashboard-mockup/1200/800"
+            src="https://images.unsplash.com/photo-1533983333333-d8745b1a42f3?q=80&w=1200&h=800"
             alt="StudyWise AI Dashboard Mockup"
             width={1200}
             height={800}
             className="w-full"
-            data-ai-hint="dashboard mockup"
+            data-ai-hint="train station sunset"
           />
         </div>
       </div>
