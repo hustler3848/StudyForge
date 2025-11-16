@@ -1,5 +1,8 @@
 'use server';
-export const runtime = "nodejs";
+
+export const config = {
+  runtime: 'nodejs'
+};
 
 /**
  * @fileOverview AI-powered flashcard generator from notes or text using Groq.
@@ -14,7 +17,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // INPUT SCHEMA
 const GenerateFlashcardsInputSchema = z.object({
   text: z.string().optional(),
-  pdfData: z.string().optional(), // base64 PDF string
+  pdfData: z.string().optional()
 });
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsInputSchema>;
 
@@ -26,11 +29,11 @@ const GenerateFlashcardsOutputSchema = z.object({
       answer: z.string(),
       type: z.enum(["Q/A", "Definition", "Concept", "Mnemonic"]),
     })
-  ),
+  )
 });
 export type GenerateFlashcardsOutput = z.infer<typeof GenerateFlashcardsOutputSchema>;
 
-// MAIN EXPORT
+// MAIN EXPORT (server action)
 export async function generateFlashcards(
   input: GenerateFlashcardsInput
 ): Promise<GenerateFlashcardsOutput> {
@@ -47,97 +50,79 @@ const generateFlashcardsFlow = ai.defineFlow(
   async (input) => {
     let sourceText = input.text?.trim();
 
-    // -------------------------------
-    // 📄 PDF HANDLING (Node-only)
-    // -------------------------------
+    // PDF handling — dynamic import required in Next.js
     if (input.pdfData) {
-      const pdf = (await import("pdf-parse")).default; // dynamic import for Next.js compatibility
+      const pdf = (await import("pdf-parse")).default;
       const pdfBuffer = Buffer.from(input.pdfData, "base64");
-      const data = await pdf(pdfBuffer);
-
-      sourceText = data.text?.trim();
+      const pdfData = await pdf(pdfBuffer);
+      sourceText = pdfData.text?.trim();
     }
 
     if (!sourceText) {
       throw new Error("No valid text extracted. Please provide text or a PDF.");
     }
 
-    // -------------------------------
-    // 🧠 PROMPTS
-    // -------------------------------
     const systemPrompt = `
 You are an expert educator who generates flashcards from text.
 
 RULES:
 - Output MUST be ONLY VALID JSON. No markdown, no extra text.
-- NEVER leave fields empty.
-- "question" must always be a clear question.
+- Never leave fields empty.
+- "question" must be a clear question.
 - "answer" must be short but complete.
-- "type" must be exactly one of: "Q/A", "Definition", "Concept", "Mnemonic".
+- "type" must be one of: "Q/A", "Definition", "Concept", "Mnemonic".
 
 Valid JSON structure:
 {
   "flashcards": [
-    { "question": "string", "answer": "string", "type": "Q/A | Definition | Concept | Mnemonic" }
+    { "question": "...", "answer": "...", "type": "Q/A | Definition | Concept | Mnemonic" }
   ]
 }
 `;
 
     const userPrompt = `Generate flashcards from the following text:\n${sourceText}`;
 
-    // -------------------------------
-    // 🤖 LLM CALL (Groq)
-    // -------------------------------
     const result = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-70b-instant",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        { role: "user", content: userPrompt }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 1200,
       temperature: 0.3,
+      max_tokens: 1200
     });
 
     let jsonText = result.choices?.[0]?.message?.content || "{}";
 
-    // Remove accidental ```json or ``` wrappers
     jsonText = jsonText
       .replace(/```json/gi, "")
       .replace(/```/g, "")
       .trim();
 
-    // -------------------------------
-    // 🛠 JSON Parsing
-    // -------------------------------
     let parsed: any;
     try {
       parsed = JSON.parse(jsonText);
-    } catch (e) {
-      console.error("Invalid JSON from Groq:", jsonText);
+    } catch (err) {
+      console.error("Invalid JSON:", jsonText);
       throw new Error("Groq returned invalid JSON.");
     }
 
-    // -----------------------------------
-    // 🛡 SAFETY: Normalize flashcard fields
-    // -----------------------------------
-    if (!Array.isArray(parsed.flashcards)) {
-      parsed.flashcards = [];
-    }
+    // normalize & sanitize
+    parsed.flashcards = Array.isArray(parsed.flashcards)
+      ? parsed.flashcards.map((fc: any) => ({
+          question: typeof fc.question === "string" && fc.question.trim()
+            ? fc.question.trim()
+            : "What is the key idea?",
+          answer: typeof fc.answer === "string" && fc.answer.trim()
+            ? fc.answer.trim()
+            : "The text explains the main concept.",
+          type: ["Q/A", "Definition", "Concept", "Mnemonic"].includes(fc.type)
+            ? fc.type
+            : "Q/A",
+        }))
+      : [];
 
-    parsed.flashcards = parsed.flashcards.map((fc: any) => ({
-      question: typeof fc.question === "string" && fc.question.trim()
-        ? fc.question.trim()
-        : "What is the key idea?",
-      answer: typeof fc.answer === "string" && fc.answer.trim()
-        ? fc.answer.trim()
-        : "The text explains the main concept.",
-      type: ["Q/A", "Definition", "Concept", "Mnemonic"].includes(fc.type)
-        ? fc.type
-        : "Q/A",
-    }));
-
-    // Validate final output with Zod
     return GenerateFlashcardsOutputSchema.parse(parsed);
   }
 );
