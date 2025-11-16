@@ -87,7 +87,7 @@ export default function FocusModePage() {
 
   return (
     <div className="flex justify-center items-center h-[70vh] animate-in fade-in-50">
-      <Card className="w-full max-w-md shadow-2xl text-center">
+      <Card className="w-full max-w-md text-center">
         <CardContent className="p-8">
             {isComplete ? (
                 <div className="space-y-6">

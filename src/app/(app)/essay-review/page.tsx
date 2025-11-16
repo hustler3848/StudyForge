@@ -75,8 +75,8 @@ export default function EssayReviewPage() {
   }
 
   return (
-    <div className="grid gap-8 md:grid-cols-2 animate-in fade-in-50">
-      <Card className="shadow-lg">
+    <div className="grid gap-6 md:grid-cols-2 animate-in fade-in-50">
+      <Card>
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Essay Review</CardTitle>
           <CardDescription>Paste your essay below to get instant AI feedback.</CardDescription>
@@ -111,7 +111,7 @@ export default function EssayReviewPage() {
       
       <div className="space-y-6">
         {isLoading && (
-          <Card className="flex items-center justify-center min-h-[500px] shadow-lg">
+          <Card className="flex items-center justify-center min-h-[500px]">
             <div className="text-center space-y-4">
               <Bot className="h-12 w-12 mx-auto animate-bounce text-primary" />
               <p className="font-semibold">AI is analyzing your essay...</p>
@@ -128,7 +128,7 @@ export default function EssayReviewPage() {
         )}
 
         {feedback && (
-          <Card className="shadow-lg animate-in fade-in-50">
+          <Card className="animate-in fade-in-50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Feedback Report</CardTitle>
               <CardDescription>Here's a breakdown of your essay's strengths and weaknesses.</CardDescription>
@@ -185,7 +185,7 @@ export default function EssayReviewPage() {
         )}
         
         {!isLoading && !feedback && !error && (
-          <Card className="flex items-center justify-center min-h-[500px] shadow-lg">
+          <Card className="flex items-center justify-center min-h-[500px]">
             <div className="text-center text-muted-foreground p-8">
               <FileText className="h-12 w-12 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">Your feedback will appear here.</h3>

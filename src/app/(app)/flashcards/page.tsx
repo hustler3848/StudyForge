@@ -103,11 +103,8 @@ export default function FlashcardsPage() {
       // ---------------------
       if (data.imageFile) {
         try {
-          // 1️⃣ Upload to Cloudinary
-          const imageUrl = await uploadToCloudinary(data.imageFile);
-
-          // 2️⃣ Send URL to your AI flow
-          const result = await generateFlashcards({ imageData: imageUrl });
+          const base64 = await fileToBase64(data.imageFile);
+          const result = await generateFlashcards({ imageData: base64 });
           setGeneratedDeck(result);
           localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
         } catch (err) {
@@ -139,9 +136,9 @@ export default function FlashcardsPage() {
   const startPractice = () => router.push('/flashcards/practice');
 
   return (
-    <div className="grid gap-8 md:grid-cols-2 animate-in fade-in-50">
+    <div className="grid gap-6 md:grid-cols-2 animate-in fade-in-50">
       {/* LEFT FORM */}
-      <Card className="shadow-lg">
+      <Card>
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Flashcard Generator</CardTitle>
           <CardDescription>
@@ -252,7 +249,7 @@ export default function FlashcardsPage() {
         )}
 
         {generatedDeck && (
-          <Card className="shadow-lg animate-in fade-in-50">
+          <Card className="animate-in fade-in-50">
             <CardHeader className="text-center">
               <div className="mx-auto bg-green-100 p-3 rounded-full">
                 <Sparkles className="h-8 w-8 text-green-600" />

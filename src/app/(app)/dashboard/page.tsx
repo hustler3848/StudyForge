@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   
   return (
-    <div className="animate-in fade-in-50 space-y-12">
+    <div className="animate-in fade-in-50 space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome back, {user?.displayName?.split(' ')[0] || 'Student'}!
@@ -67,10 +67,10 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {features.map((feature) => (
           <Link href={feature.href} key={feature.title}>
-            <Card className="shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
+            <Card className="hover:border-primary/50 transition-colors h-full flex flex-col">
               <CardHeader>
                 <div className={`p-3 rounded-full w-min ${feature.bgColor}`}>
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />
@@ -85,7 +85,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
            <h2 className="text-2xl font-bold tracking-tight mb-4">Upcoming Tasks</h2>
            <Card>

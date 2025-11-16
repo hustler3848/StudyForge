@@ -135,7 +135,7 @@ export default function StudyPlanPage() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3 animate-in fade-in-50">
-      <Card className="shadow-lg lg:col-span-1">
+      <Card className="lg:col-span-1">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Create Your Study Plan</CardTitle>
           <CardDescription>Tell the AI about your goals and schedule to generate a personalized plan.</CardDescription>
@@ -238,7 +238,7 @@ export default function StudyPlanPage() {
         )}
         
         {plan && (
-            <Card className="shadow-lg animate-in fade-in-50">
+            <Card className="animate-in fade-in-50">
                 <CardHeader>
                     <CardTitle className="font-headline text-2xl">Your Smart Study Plan</CardTitle>
                     <CardDescription>A tailored plan to help you achieve your goals.</CardDescription>
