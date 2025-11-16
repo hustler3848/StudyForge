@@ -29,19 +29,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
         const docSnap = await getDoc(userDocRef);
         if (docSnap.exists()) {
-          const appUser = docSnap.data() as AppUser;
-          setUser(appUser);
-           if (['/onboarding', '/signin', '/signup', '/login'].includes(window.location.pathname)) {
-            router.push('/dashboard');
-          }
+          setUser(docSnap.data() as AppUser);
         } else {
-           // This case is primarily for when a user is already logged in to Google
-           // but doesn't have a profile in our app yet. signInWithGoogle handles the
-           // main new user creation flow.
-           const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
-           await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
+           // This case is for a brand new user.
+           // We create their profile here.
+           const newAppUser: AppUser = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              photoURL: firebaseUser.photoURL,
+              profileComplete: true, // Bypass onboarding
+           };
+           await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp() });
            setUser(newAppUser);
-           router.push('/dashboard');
         }
       } else {
         setUser(null);
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
 
   const createUserProfileFromFirebaseUser = (firebaseUser: User): AppUser => ({
@@ -65,33 +65,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
-      const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
-      const docSnap = await getDoc(userDocRef);
-
-      if (!docSnap.exists()) {
-        const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
-        // Important: create the user doc *before* routing
-        await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
-        setUser(newAppUser);
-      } else {
-        // If doc exists, the onAuthStateChanged listener will handle setting the user
-      }
-       router.push('/dashboard');
+      await signInWithPopup(auth, provider);
+      // After signInWithPopup resolves, the onAuthStateChanged listener above
+      // will handle fetching/creating the user document and setting the user state.
+      // We can now safely route to the dashboard.
+      router.push('/dashboard');
     } catch (error) {
       console.error("Error during sign-in:", error);
       setUser(null);
       setLoading(false);
     } 
-    // finally block removed as onAuthStateChanged handles the final loading state
   };
 
   const logout = async () => {
-    setLoading(true);
     await signOut(auth);
-    setUser(null);
-    router.push('/signin');
+    setUser(null); // Clear user state immediately
+    router.push('/signin'); // Redirect to sign-in page
   };
 
   const updateUserProfile = async (profileData: Partial<AppUser>) => {
