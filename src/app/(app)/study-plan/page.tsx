@@ -34,13 +34,19 @@ import { StudyPlan } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DndContext,
-  useDraggable,
-  useDroppable,
+  DragOverlay,
   closestCenter,
   type DragEndEvent,
-  DragOverlay,
 } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
+import { useDraggable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
 
 const studyPlanSchema = z.object({
   tasks: z
@@ -194,7 +200,6 @@ export default function StudyPlanPage() {
       );
       // For now, we are not placing AI suggestions on calendar.
       // This could be a future improvement.
-      // setStudyBlocks(newBlocks);
       alert("AI plan generated! You can now drag subjects to the calendar.");
     } catch (error) {
       console.error("Error generating study plan:", error);
@@ -366,3 +371,5 @@ export default function StudyPlanPage() {
     </DndContext>
   );
 }
+
+    
