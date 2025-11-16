@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Bot, Calendar, Plus, Trash2, Timelapse } from 'lucide-react';
+import { Bot, Calendar, Plus, Trash2, Timer } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { generateStudyPlan, type GenerateStudyPlanOutput } from '@/ai/flows/smart-study-plan';
 import { Separator } from '@/components/ui/separator';
@@ -233,7 +233,7 @@ export default function StudyPlanPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Timelapse /> Daily Session Priorities</h3>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Timer /> Daily Session Priorities</h3>
                         <Table>
                             <TableHeader>
                                 <TableRow>
