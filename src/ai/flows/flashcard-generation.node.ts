@@ -45,7 +45,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const GenerateFlashcardsInputSchema = z.object({
   text: z.string().optional(),
   pdfData: z.string().optional(),
-  imageData: z.string().optional(), // base64 image string
+  imageData: z.string().optional(), // base64 image string OR a public URL
 });
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsInputSchema>;
 
@@ -99,12 +99,12 @@ const generateFlashcardsFlow = ai.defineFlow(
     // Image OCR via Groq
     // -----------------------------
     if (input.imageData) {
-      // The client now sends a base64 string, so we upload it.
-      const imageUrl = await uploadToCloudinary(input.imageData);
+       // The client now sends a public URL from Cloudinary.
+      const imageUrl = input.imageData;
 
-      // 2️⃣ Send to Groq OCR model
+      // Send to Groq OCR model
       const ocr = await groq.chat.completions.create({
-        model: "llama-3.1-70b-versatile", // Using the versatile model as requested
+        model: "llama-3.1-70b-versatile",
         messages: [
           {
             role: "user",
@@ -145,7 +145,7 @@ RULES:
     const userPrompt = `Generate flashcards from the following text:\n${sourceText}`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile", // Using the versatile model as requested
+      model: "llama-3.1-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
