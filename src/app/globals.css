@@ -142,11 +142,4 @@ h6 {
   .animation-delay-4000 {
     animation-delay: 4s;
   }
-
-  .animate-on-scroll {
-    animation: fade-in-up linear;
-    animation-timeline: view();
-    animation-range-start: 10vh;
-    animation-range-end: 50vh;
-  }
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -23,6 +24,12 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
+import { motion } from 'framer-motion';
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const Header = () => {
   const { setTheme, theme } = useTheme();
@@ -87,7 +94,13 @@ const Header = () => {
 const HeroSection = () => (
   <section className="py-20 md:py-32">
     <div className="container grid md:grid-cols-2 gap-12 items-center">
-      <div className="flex flex-col gap-6 text-center md:text-left items-center md:items-start animate-on-scroll">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5 }}
+        variants={sectionVariants}
+        className="flex flex-col gap-6 text-center md:text-left items-center md:items-start"
+      >
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter font-headline">
           <span className="bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">
             Learn Smarter.
@@ -110,8 +123,14 @@ const HeroSection = () => (
             Start Free - No signup needed
           </Link>
         </div>
-      </div>
-      <div className="relative w-full max-w-2xl mx-auto overflow-hidden animate-on-scroll">
+      </motion.div>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.5, delay: 0.2 }}
+        variants={sectionVariants}
+        className="relative w-full max-w-2xl mx-auto overflow-hidden"
+      >
         <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
         <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
@@ -122,15 +141,23 @@ const HeroSection = () => (
             height={800}
             className="w-full"
             data-ai-hint="train station sunset"
+            priority
           />
         </div>
-      </div>
+      </motion.div>
     </div>
   </section>
 );
 
 const TrustedSection = () => (
-  <section className="py-8 bg-secondary/50 animate-on-scroll">
+  <motion.section
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    variants={sectionVariants}
+    className="py-8 bg-secondary/50"
+  >
     <div className="container text-center">
       <p className="text-sm uppercase text-muted-foreground font-semibold tracking-wider">
         Used by students preparing for
@@ -143,7 +170,7 @@ const TrustedSection = () => (
         <span>University Exams</span>
       </div>
     </div>
-  </section>
+  </motion.section>
 );
 
 const features = [
@@ -178,7 +205,15 @@ const features = [
 ];
 
 const FeatureShowcaseSection = () => (
-  <section id="features" className="py-20 md:py-28 animate-on-scroll">
+  <motion.section
+    id="features"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    variants={sectionVariants}
+    className="py-20 md:py-28"
+  >
     <div className="container">
       <div className="text-center max-w-3xl mx-auto mb-12">
         <h2 className="text-4xl font-extrabold font-headline">
@@ -190,35 +225,48 @@ const FeatureShowcaseSection = () => (
         </p>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {features.map((feature) => (
-          <Card
+        {features.map((feature, i) => (
+          <motion.div
             key={feature.title}
-            className="text-center p-2 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 * i }}
+            variants={sectionVariants}
           >
-            <CardHeader>
-              <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/50 dark:to-sky-900/50 mb-4">
-                <feature.icon className="w-8 h-8 text-sky-600 dark:text-sky-400" />
-              </div>
-              <CardTitle className="font-headline text-xl">
-                {feature.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                {feature.description}
-              </p>
-            </CardContent>
-          </Card>
+            <Card
+              className="text-center p-2 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 h-full"
+            >
+              <CardHeader>
+                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/50 dark:to-sky-900/50 mb-4">
+                  <feature.icon className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+                </div>
+                <CardTitle className="font-headline text-xl">
+                  {feature.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  {feature.description}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
     </div>
-  </section>
+  </motion.section>
 );
 
 const HowItWorksSection = () => (
-  <section
+  <motion.section
     id="how-it-works"
-    className="py-20 md:py-28 bg-secondary/30 animate-on-scroll"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    variants={sectionVariants}
+    className="py-20 md:py-28 bg-secondary/30"
   >
     <div className="container">
       <div className="text-center max-w-3xl mx-auto mb-16">
@@ -232,8 +280,14 @@ const HowItWorksSection = () => (
       </div>
       <div className="relative grid md:grid-cols-3 gap-8">
         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
-        <div className="relative flex flex-col items-center text-center">
-          <div className="absolute top-1/2 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          variants={sectionVariants}
+          className="relative flex flex-col items-center text-center"
+        >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
             <span className="text-2xl font-bold text-primary">1</span>
           </div>
@@ -244,9 +298,15 @@ const HowItWorksSection = () => (
             Input your subjects, upcoming exams, assignments, and available
             study time.
           </p>
-        </div>
-        <div className="relative flex flex-col items-center text-center">
-          <div className="absolute top-1/2 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
+        </motion.div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          variants={sectionVariants}
+          className="relative flex flex-col items-center text-center"
+        >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
             <span className="text-2xl font-bold text-primary">2</span>
           </div>
@@ -257,8 +317,15 @@ const HowItWorksSection = () => (
             Our AI analyzes your input to generate a personalized study plan and
             resources.
           </p>
-        </div>
-        <div className="relative flex flex-col items-center text-center">
+        </motion.div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          variants={sectionVariants}
+          className="relative flex flex-col items-center text-center"
+        >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
             <span className="text-2xl font-bold text-primary">3</span>
           </div>
@@ -269,14 +336,22 @@ const HowItWorksSection = () => (
             Follow your daily plan, practice with AI flashcards, and track your
             progress.
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
-  </section>
+  </motion.section>
 );
 
 const PricingSection = () => (
-  <section id="pricing" className="py-20 md:py-28 animate-on-scroll">
+  <motion.section
+    id="pricing"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    transition={{ duration: 0.5, delay: 0.2 }}
+    variants={sectionVariants}
+    className="py-20 md:py-28"
+  >
     <div className="container">
       <div className="text-center max-w-3xl mx-auto mb-12">
         <h2 className="text-4xl font-extrabold font-headline">
@@ -324,11 +399,11 @@ const PricingSection = () => (
         </Card>
       </div>
     </div>
-  </section>
+  </motion.section>
 );
 
 const Footer = () => (
-  <footer className="py-8 border-t animate-on-scroll">
+  <footer className="py-8 border-t">
     <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         <Logo />
