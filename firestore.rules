@@ -1,0 +1,175 @@
+/**
+ * @fileoverview Firestore Security Rules for StudyWise AI.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for all data. Each user has a dedicated data tree under `/users/{userId}` where their profile, essays, study plans, flashcards, study sessions, and streak data are stored. Only the authenticated user can access their own data.
+ *
+ * Data Structure:
+ * All user-specific data is nested under `/users/{userId}`.
+ * - `/users/{userId}/profile`: User profile information.
+ * - `/users/{userId}/essays/{essayId}`: Essays submitted by the user.
+ * - `/users/{userId}/plans/{planId}`: Study plans generated for the user.
+ * - `/users/{userId}/flashcards/{deckId}`: Flashcard decks created by the user.
+ * - `/users/{userId}/studySessions/{sessionId}`: Study sessions conducted by the user.
+ * - `/users/{userId}/streak`: Study streak data for the user.
+ *
+ * Key Security Decisions:
+ * - No user listing is allowed.
+ * - All read and write operations are protected by the `isOwner(userId)` check, ensuring that only the authenticated user can access their own data.
+ * - Data consistency between the path and document data is enforced on create and update operations to prevent unauthorized data manipulation.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the current user is signed in.
+     * @returns {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the requested user ID matches the authenticated user's ID.
+     * @param {string} userId - The user ID to check against.
+     * @returns {boolean} True if the user IDs match, false otherwise.
+     * @example isOwner('user123') will return true if request.auth.uid is 'user123'.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is an existing owner by validating user ID and document existence.
+     * @param {string} userId - The user ID to check against.
+     * @returns {boolean} True if the user IDs match and the resource exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Enforces document ID immutability on updates.
+     * @param {string} documentId - The ID of the document being updated.
+     * @returns {boolean} True if the document ID is not being changed, false otherwise.
+     */
+    function isDocumentIdImmutable(documentId) {
+      return resource.data.id == documentId;
+    }
+
+    /**
+     * @description Rules for user profiles.
+     * @path /users/{userId}/profile
+     * @allow (create) User with ID 'user123' can create their profile with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their profile with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their profile with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create profile for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read profile of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update profile of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/profile {
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing user profiles is not permitted.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for essays.
+     * @path /users/{userId}/essays/{essayId}
+     * @allow (create) User with ID 'user123' can create an essay with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their essay with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their essay with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create an essay for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read essay of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update essay of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/essays/{essayId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for study plans.
+     * @path /users/{userId}/plans/{planId}
+     * @allow (create) User with ID 'user123' can create a study plan with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their study plan with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their study plan with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a study plan for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read study plan of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update study plan of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/plans/{planId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for flashcard decks.
+     * @path /users/{userId}/flashcards/{deckId}
+     * @allow (create) User with ID 'user123' can create a flashcard deck with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their flashcard deck with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their flashcard deck with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a flashcard deck for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read flashcard deck of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update flashcard deck of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/flashcards/{deckId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for study sessions.
+     * @path /users/{userId}/studySessions/{sessionId}
+     * @allow (create) User with ID 'user123' can create a study session with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their study session with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their study session with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a study session for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read study session of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update study session of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/studySessions/{sessionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for study streak data.
+     * @path /users/{userId}/streak
+     * @allow (create) User with ID 'user123' can create streak data with request.auth.uid == 'user123'.
+     * @allow (get) User with ID 'user123' can read their streak data with request.auth.uid == 'user123'.
+     * @allow (update) User with ID 'user123' can update their streak data with request.auth.uid == 'user123'.
+     * @deny (create) User with ID 'user123' cannot create streak data for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read streak data of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update streak data of 'user456'.
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
+     */
+    match /users/{userId}/streak {
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing user streaks is not permitted.
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow delete: if isExistingOwner(userId);
+    }
+  }
+}

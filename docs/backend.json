@@ -1,0 +1,391 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile and preferences.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "gradeLevel": {
+          "type": "string",
+          "description": "The user's grade or class level."
+        },
+        "subjects": {
+          "type": "array",
+          "description": "List of subjects the user is studying.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "examDates": {
+          "type": "array",
+          "description": "List of important exam dates for the user.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weeklyFreeHours": {
+          "type": "number",
+          "description": "Number of free hours the user has available each week for studying."
+        }
+      },
+      "required": [
+        "id",
+        "gradeLevel",
+        "subjects",
+        "weeklyFreeHours"
+      ]
+    },
+    "Essay": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Essay",
+      "type": "object",
+      "description": "Represents an essay submitted by a user for review.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Essay entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Essay)"
+        },
+        "text": {
+          "type": "string",
+          "description": "The text content of the essay."
+        },
+        "grammarScore": {
+          "type": "number",
+          "description": "Grammar score of the essay (0-100)."
+        },
+        "readabilityScore": {
+          "type": "number",
+          "description": "Readability score of the essay."
+        },
+        "claritySuggestions": {
+          "type": "string",
+          "description": "Suggestions for improving the clarity of the essay."
+        },
+        "structuralSuggestions": {
+          "type": "string",
+          "description": "Suggestions for improving the structure of the essay."
+        },
+        "toneAnalysis": {
+          "type": "string",
+          "description": "Analysis of the tone of the essay."
+        },
+        "correctedRewrite": {
+          "type": "string",
+          "description": "A corrected rewrite of the essay (optional)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "text",
+        "grammarScore",
+        "readabilityScore"
+      ]
+    },
+    "StudyPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudyPlan",
+      "type": "object",
+      "description": "Represents a study plan generated for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudyPlan entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N StudyPlan)"
+        },
+        "upcomingTests": {
+          "type": "array",
+          "description": "List of upcoming tests.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "assignments": {
+          "type": "array",
+          "description": "List of assignments.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "freeTimeSlots": {
+          "type": "array",
+          "description": "List of free time slots available for studying.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "studyGoals": {
+          "type": "string",
+          "description": "The user's study goals."
+        },
+        "dailySessionList": {
+          "type": "array",
+          "description": "List of daily study sessions.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "subjectPriority": {
+          "type": "string",
+          "description": "The priority of subjects to study."
+        },
+        "estimatedTime": {
+          "type": "number",
+          "description": "Estimated time needed for the study plan."
+        },
+        "timetable": {
+          "type": "string",
+          "description": "A 7-day timetable for the study plan."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "studyGoals"
+      ]
+    },
+    "FlashcardDeck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FlashcardDeck",
+      "type": "object",
+      "description": "Represents a deck of flashcards generated for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the FlashcardDeck entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N FlashcardDeck)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the Flashcard deck."
+        },
+        "flashcards": {
+          "type": "array",
+          "description": "List of flashcards within the deck.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "name"
+      ]
+    },
+    "StudySession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudySession",
+      "type": "object",
+      "description": "Represents a study session conducted by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudySession entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N StudySession)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "The start time of the study session."
+        },
+        "endTime": {
+          "type": "string",
+          "description": "The end time of the study session."
+        },
+        "duration": {
+          "type": "number",
+          "description": "The duration of the study session in minutes."
+        },
+        "motivationNudges": {
+          "type": "array",
+          "description": "List of motivation nudges received during the session.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "startTime",
+        "endTime",
+        "duration"
+      ]
+    },
+    "Streak": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Streak",
+      "type": "object",
+      "description": "Represents a user's study streak.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Streak entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Streak)"
+        },
+        "currentStreak": {
+          "type": "number",
+          "description": "The user's current study streak."
+        },
+        "longestStreak": {
+          "type": "number",
+          "description": "The user's longest study streak."
+        },
+        "lastStudied": {
+          "type": "string",
+          "description": "The last time the user studied."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "currentStreak",
+        "longestStreak"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/profile",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores the user's profile data, including grade level, subjects, exam dates, and weekly free hours. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/essays/{essayId}",
+        "definition": {
+          "entityName": "Essay",
+          "schema": {
+            "$ref": "#/backend/entities/Essay"
+          },
+          "description": "Stores essays submitted by the user, along with AI-generated feedback. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "essayId",
+              "description": "The unique identifier for the essay."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/plans/{planId}",
+        "definition": {
+          "entityName": "StudyPlan",
+          "schema": {
+            "$ref": "#/backend/entities/StudyPlan"
+          },
+          "description": "Stores study plans generated for the user. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "planId",
+              "description": "The unique identifier for the study plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/flashcards/{deckId}",
+        "definition": {
+          "entityName": "FlashcardDeck",
+          "schema": {
+            "$ref": "#/backend/entities/FlashcardDeck"
+          },
+          "description": "Stores flashcard decks created by the user. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "deckId",
+              "description": "The unique identifier for the flashcard deck."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/studySessions/{sessionId}",
+        "definition": {
+          "entityName": "StudySession",
+          "schema": {
+            "$ref": "#/backend/entities/StudySession"
+          },
+          "description": "Stores study sessions conducted by the user. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "sessionId",
+              "description": "The unique identifier for the study session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/streak",
+        "definition": {
+          "entityName": "Streak",
+          "schema": {
+            "$ref": "#/backend/entities/Streak"
+          },
+          "description": "Stores study streak data for the user. Accessible only by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations."
+  }
+}
