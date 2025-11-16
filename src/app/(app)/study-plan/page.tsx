@@ -10,10 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Bot, Calendar, Plus, Trash2 } from 'lucide-react';
+import { Bot, Calendar, Plus, Trash2, Timelapse } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { generateStudyPlan, type GenerateStudyPlanOutput } from '@/ai/flows/smart-study-plan';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const studyPlanSchema = z.object({
   tasks: z.array(z.object({ value: z.string().min(1, 'Task cannot be empty.') })).min(1, 'Please add at least one task.'),
@@ -22,6 +23,58 @@ const studyPlanSchema = z.object({
 });
 
 type StudyPlanFormValues = z.infer<typeof studyPlanSchema>;
+
+const subjectColors: { [key: string]: string } = {
+  default: 'bg-gray-200 text-gray-800',
+  math: 'bg-blue-100 text-blue-800',
+  science: 'bg-green-100 text-green-800',
+  history: 'bg-yellow-100 text-yellow-800',
+  english: 'bg-purple-100 text-purple-800',
+  biology: 'bg-green-200 text-green-900',
+  chemistry: 'bg-indigo-100 text-indigo-800',
+  physics: 'bg-sky-100 text-sky-800',
+  literature: 'bg-pink-100 text-pink-800',
+  algebra: 'bg-blue-200 text-blue-900',
+};
+
+const getColorForSubject = (subject: string) => {
+  const lowerCaseSubject = subject.toLowerCase();
+  for (const key in subjectColors) {
+    if (lowerCaseSubject.includes(key)) {
+      return subjectColors[key];
+    }
+  }
+  return subjectColors.default;
+};
+
+type ParsedSession = {
+  time: string;
+  subject: string;
+  task: string;
+};
+
+type ParsedDay = {
+  day: string;
+  sessions: ParsedSession[];
+};
+
+const parseTimetable = (timetable: string): ParsedDay[] => {
+    if (!timetable) return [];
+    const days = timetable.split(/(?=Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/);
+    return days.filter(day => day.trim()).map(dayString => {
+        const lines = dayString.trim().split('\n');
+        const day = lines[0].replace(':', '').trim();
+        const sessions = lines.slice(1).map(line => {
+            const match = line.match(/-\s(.*?):\s(.*?)\s\((.*?)\)/);
+            if (match) {
+                return { time: match[1], subject: match[2], task: match[3] };
+            }
+            return null;
+        }).filter((s): s is ParsedSession => s !== null);
+        return { day, sessions };
+    });
+};
+
 
 export default function StudyPlanPage() {
   const { user } = useAuth();
@@ -73,64 +126,70 @@ export default function StudyPlanPage() {
     }
   }
 
+  const parsedWeeklyPlan = plan ? parseTimetable(plan.weeklyTimetable) : [];
+
   return (
-    <div className="grid gap-8 md:grid-cols-2 animate-in fade-in-50">
-      <Card className="shadow-lg">
+    <div className="grid gap-8 lg:grid-cols-3 animate-in fade-in-50">
+      <Card className="shadow-lg lg:col-span-1">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Create Your Study Plan</CardTitle>
           <CardDescription>Tell the AI about your goals and schedule to generate a personalized plan.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <FormLabel>Upcoming Tests & Assignments</FormLabel>
-                {taskFields.map((field, index) => (
-                  <FormField
-                    key={field.id}
-                    control={form.control}
-                    name={`tasks.${index}.value`}
-                    render={({ field }) => (
-                      <FormItem className="flex items-center gap-2 mt-2">
-                        <FormControl>
-                          <Input placeholder={`e.g., Math test on Friday`} {...field} />
-                        </FormControl>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeTask(index)} disabled={taskFields.length <= 1}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                <FormLabel className="text-sm font-medium">Upcoming Tests & Assignments</FormLabel>
+                <div className="space-y-2 mt-2">
+                    {taskFields.map((field, index) => (
+                    <FormField
+                        key={field.id}
+                        control={form.control}
+                        name={`tasks.${index}.value`}
+                        render={({ field }) => (
+                        <FormItem className="flex items-center gap-2">
+                            <FormControl>
+                            <Input placeholder={`e.g., Math test on Friday`} {...field} />
+                            </FormControl>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeTask(index)} disabled={taskFields.length <= 1}>
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </FormItem>
+                        )}
+                    />
+                    ))}
+                </div>
                 <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendTask({ value: '' })}>
                   <Plus className="mr-2 h-4 w-4" /> Add Task
                 </Button>
-                 <FormMessage>{form.formState.errors.tasks?.message}</FormMessage>
+                 <FormMessage className="mt-1">{form.formState.errors.tasks?.message}</FormMessage>
               </div>
 
               <div>
-                <FormLabel>Free Time Slots</FormLabel>
-                {freeHourFields.map((field, index) => (
-                  <FormField
-                    key={field.id}
-                    control={form.control}
-                    name={`freeHours.${index}.value`}
-                    render={({ field }) => (
-                      <FormItem className="flex items-center gap-2 mt-2">
-                        <FormControl>
-                          <Input placeholder={`e.g., Monday 4-6 PM`} {...field} />
-                        </FormControl>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => removeFreeHour(index)} disabled={freeHourFields.length <= 1}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </FormItem>
-                    )}
-                  />
-                ))}
+                <FormLabel className="text-sm font-medium">Free Time Slots</FormLabel>
+                <div className="space-y-2 mt-2">
+                    {freeHourFields.map((field, index) => (
+                    <FormField
+                        key={field.id}
+                        control={form.control}
+                        name={`freeHours.${index}.value`}
+                        render={({ field }) => (
+                        <FormItem className="flex items-center gap-2">
+                            <FormControl>
+                            <Input placeholder={`e.g., Monday 4-6 PM`} {...field} />
+                            </FormControl>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeFreeHour(index)} disabled={freeHourFields.length <= 1}>
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </FormItem>
+                        )}
+                    />
+                    ))}
+                </div>
                 <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendFreeHour({ value: '' })}>
                   <Plus className="mr-2 h-4 w-4" /> Add Slot
                 </Button>
-                <FormMessage>{form.formState.errors.freeHours?.message}</FormMessage>
+                <FormMessage className="mt-1">{form.formState.errors.freeHours?.message}</FormMessage>
               </div>
               
               <FormField
@@ -155,7 +214,7 @@ export default function StudyPlanPage() {
         </CardContent>
       </Card>
       
-      <div className="space-y-6">
+      <div className="space-y-6 lg:col-span-2">
         {isLoading && (
             <Card className="flex items-center justify-center min-h-[500px]">
                 <div className="text-center space-y-4 text-muted-foreground">
@@ -174,7 +233,7 @@ export default function StudyPlanPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div>
-                        <h3 className="font-semibold mb-2">Daily Session Priorities</h3>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Timelapse /> Daily Session Priorities</h3>
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -186,12 +245,13 @@ export default function StudyPlanPage() {
                             <TableBody>
                                 {plan.dailySessions.map((session, index) => (
                                 <TableRow key={index}>
-                                    <TableCell>{session.subject}</TableCell>
+                                    <TableCell className="font-medium">{session.subject}</TableCell>
                                     <TableCell>
-                                    <span className={`px-2 py-1 text-xs rounded-full ${
-                                        session.priority === 'high' ? 'bg-red-100 text-red-800' : 
-                                        session.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-                                    }`}>
+                                    <span className={cn('px-2 py-1 text-xs font-semibold rounded-full', {
+                                        'bg-red-100 text-red-800': session.priority === 'high',
+                                        'bg-yellow-100 text-yellow-800': session.priority === 'medium',
+                                        'bg-green-100 text-green-800': session.priority === 'low'
+                                    })}>
                                         {session.priority}
                                     </span>
                                     </TableCell>
@@ -202,10 +262,27 @@ export default function StudyPlanPage() {
                         </Table>
                     </div>
                     <Separator />
-                    <div>
-                        <h3 className="font-semibold mb-2">Weekly Timetable</h3>
-                        <div className="prose prose-sm max-w-none bg-secondary p-4 rounded-md whitespace-pre-wrap font-mono text-xs">
-                            {plan.weeklyTimetable}
+                     <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2"><Calendar /> Weekly Timetable</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                            {parsedWeeklyPlan.map(day => (
+                                <div key={day.day} className="bg-secondary/50 rounded-lg p-3">
+                                    <h4 className="font-bold text-center mb-4">{day.day}</h4>
+                                    <div className="space-y-2">
+                                        {day.sessions.length > 0 ? day.sessions.map((session, index) => (
+                                            <div key={index} className={cn("p-2 rounded-md", getColorForSubject(session.subject))}>
+                                                <p className="font-bold text-sm">{session.time}</p>
+                                                <p className="font-semibold text-xs">{session.subject}</p>
+                                                <p className="text-xs opacity-80">{session.task}</p>
+                                            </div>
+                                        )) : (
+                                            <div className="text-center text-xs text-muted-foreground p-4">
+                                                <p>Free Day!</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </CardContent>

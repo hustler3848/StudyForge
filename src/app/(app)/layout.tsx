@@ -24,6 +24,9 @@ import {
   Clock,
   Sun,
   Moon,
+  Home,
+  FileText,
+  Book,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -39,10 +42,10 @@ import {
 import { Button } from '@/components/ui/button';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/essay-review', label: 'Essay Review', icon: BookOpen },
-  { href: '/flashcards', label: 'Flashcards', icon: BrainCircuit },
-  { href: '/study-plan', label: 'Study Plan', icon: CalendarDays },
+  { href: '/dashboard', label: 'Dashboard', icon: Home },
+  { href: '/study-plan', label: 'My Plan', icon: CalendarDays },
+  { href: '/essay-review', label: 'Essay Review', icon: FileText },
+  { href: '/flashcards', label: 'Flashcards', icon: Book },
   { href: '/focus-mode', label: 'Focus Mode', icon: Clock },
 ];
 
@@ -59,7 +62,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar side="left" collapsible="icon">
+        <Sidebar>
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -94,8 +97,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
-              <SidebarTrigger className="md:hidden" />
-              <div/>
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="md:hidden" />
+                <h1 className="text-xl font-semibold">
+                  {navItems.find(item => pathname.startsWith(item.href))?.label || 'StudyWise'}
+                </h1>
+              </div>
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon">
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
