@@ -25,8 +25,8 @@ const Header = () => (
           <Link href="#pricing" className="text-foreground/60 transition-colors hover:text-foreground/80">Pricing</Link>
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }))}>Login</Link>
-          <Link href="/login" className={cn(buttonVariants({ variant: "default" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Get Started</Link>
+          <Link href="/signin" className={cn(buttonVariants({ variant: "ghost" }))}>Login</Link>
+          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Get Started</Link>
         </div>
       </div>
     </header>
@@ -45,7 +45,7 @@ const HeroSection = () => (
           Your personal AI tutor that creates adaptive study plans, generates flashcards, analyzes essays, and tracks your progress — automatically.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link href="/login" className={cn(buttonVariants({ size: "lg" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Start Free - No signup needed</Link>
+          <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Start Free - No signup needed</Link>
         </div>
       </div>
       <div className="relative w-full max-w-2xl mx-auto">
@@ -195,7 +195,7 @@ const PricingSection = () => (
                            <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-green-500" /> Basic Analytics</li>
                         </ul>
                          <Button asChild size="lg" className="w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white">
-                           <Link href="/login">Get Started - It's Free</Link>
+                           <Link href="/signup">Get Started - It's Free</Link>
                          </Button>
                     </CardContent>
                 </Card>

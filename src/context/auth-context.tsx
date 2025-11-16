@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('studywise-user');
     setUser(null);
     setLoading(false);
-    router.push('/login');
+    router.push('/signin');
   };
 
   const updateUserProfile = (profileData: Partial<AppUser>) => {
