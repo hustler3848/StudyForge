@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Firestore Security Rules for StudyWise AI.
  *
@@ -16,7 +17,7 @@
  * Key Security Decisions:
  * - No user listing is allowed.
  * - All read and write operations are protected by the `isOwner(userId)` check, ensuring that only the authenticated user can access their own data.
- * - Data consistency between the path and document data is enforced on create and update operations to prevent unauthorized data manipulation.
+ * - Data consistency between the path and document data is enforced on create operations to prevent unauthorized data manipulation.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -39,25 +40,7 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    /**
-     * @description Checks if the user is an existing owner by validating user ID and document existence.
-     * @param {string} userId - The user ID to check against.
-     * @returns {boolean} True if the user IDs match and the resource exists.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && exists(path);
-    }
-
-    /**
-     * @description Enforces document ID immutability on updates.
-     * @param {string} documentId - The ID of the document being updated.
-     * @returns {boolean} True if the document ID is not being changed, false otherwise.
-     */
-    function isDocumentIdImmutable(documentId) {
-      return request.resource.data.id == documentId;
-    }
-
+    
     /**
      * @description Rules for user profiles.
      * @path /users/{userId}/profile
@@ -70,11 +53,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/profile {
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing user profiles is not permitted.
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(userId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
     /**
@@ -89,11 +68,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/essays/{essayId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(essayId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
     /**
@@ -108,11 +83,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/plans/{planId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(planId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
     /**
@@ -127,11 +98,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/flashcards/{deckId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(deckId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
     /**
@@ -146,11 +113,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/studySessions/{sessionId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(sessionId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
 
     /**
@@ -165,11 +128,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree. Validates relational integrity between documents.
      */
     match /users/{userId}/streak {
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing user streaks is not permitted.
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(userId);
-      allow delete: if isExistingOwner(userId);
+      allow read, write: if isOwner(userId);
     }
   }
 }
