@@ -5,6 +5,7 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 
 export default function AuthLayout({
@@ -13,6 +14,13 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const { setTheme, theme } = useTheme();
+
+  useEffect(() => {
+    document.body.classList.add('w-full', 'overflow-x-hidden');
+    return () => {
+      document.body.classList.remove('w-full', 'overflow-x-hidden');
+    }
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -28,7 +36,7 @@ export default function AuthLayout({
           <span className="sr-only">Toggle theme</span>
         </Button>
       </header>
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-background">
+      <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 bg-background">
         {children}
       </main>
     </>
