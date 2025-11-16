@@ -3,18 +3,27 @@ import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk, DM_Sans, Fira_Code } from 'next/font/google';
 
-const fontBody = Inter({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  variable: '--font-body',
+  display: 'swap',
+  variable: '--font-space-grotesk',
 });
 
-const fontHeadline = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-headline',
+  weight: ['400', '600'],
+  display: 'swap',
+  variable: '--font-dm-sans',
 });
+
+const firaCode = Fira_Code({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fira-code',
+});
+
 
 export const metadata: Metadata = {
   title: 'StudyWise AI',
@@ -31,8 +40,9 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          fontBody.variable,
-          fontHeadline.variable
+          spaceGrotesk.variable,
+          dmSans.variable,
+          firaCode.variable,
         )}
       >
         <AuthProvider>
