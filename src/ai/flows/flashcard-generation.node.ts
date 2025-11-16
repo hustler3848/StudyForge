@@ -99,18 +99,18 @@ const generateFlashcardsFlow = ai.defineFlow(
     // Image OCR via Groq
     // -----------------------------
     if (input.imageData) {
-      // 1️⃣ Upload to Cloudinary (or any public URL) if needed
+      // The client now sends a base64 string, so we upload it.
       const imageUrl = await uploadToCloudinary(input.imageData);
 
       // 2️⃣ Send to Groq OCR model
       const ocr = await groq.chat.completions.create({
-        model: "llama-4-maverick-17b-128e-instruct",
+        model: "llama-3.1-70b-versatile", // Using the versatile model as requested
         messages: [
           {
             role: "user",
             content: [
               { type: "text", text: "Extract ALL readable text from this image. Return pure text only." },
-              { type: "image_url", image_url: imageUrl as any } // cast to satisfy TypeScript
+              { type: "image_url", image_url: { url: imageUrl } }
             ]
           }
         ]
@@ -145,7 +145,7 @@ RULES:
     const userPrompt = `Generate flashcards from the following text:\n${sourceText}`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.1-70b-instant",
+      model: "llama-3.1-70b-versatile", // Using the versatile model as requested
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

@@ -18,28 +18,24 @@ import { generateFlashcards, type GenerateFlashcardsOutput } from '@/ai/flows/fl
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_PDF_TYPES = ["application/pdf"];
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];
-
-// CLOUDINARY CONFIG
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dh3zrzgz4/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "flashcards_upload";
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const flashcardSchema = z.object({
   notes: z.string().optional(),
 
-  pdfFile: z.any()
+  pdfFile: z.instanceof(File)
     .optional()
     .refine((file) => !file || file.size <= MAX_FILE_SIZE, "Max file size is 5MB.")
     .refine((file) => !file || ACCEPTED_PDF_TYPES.includes(file.type), "Only .pdf files are accepted."),
 
-  imageFile: z.any()
+  imageFile: z.instanceof(File)
     .optional()
     .refine((file) => !file || file.size <= MAX_FILE_SIZE, "Max file size is 5MB.")
-    .refine((file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type), "Only JPG or PNG images are accepted."),
+    .refine((file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type), "Only JPG, PNG, or WEBP images are accepted."),
 })
 .refine(data => data.notes || data.pdfFile || data.imageFile, {
   message: "Please provide notes, a PDF, or an image.",
-  path: ["notes"],
+  path: ["notes"], // Show error under the notes field
 });
 
 type FlashcardFormValues = z.infer<typeof flashcardSchema>;
@@ -58,26 +54,11 @@ export default function FlashcardsPage() {
   async function fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
+      // Return the base64 string, excluding the data URI prefix
       reader.onload = () => resolve((reader.result as string).split(",")[1]);
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
-  }
-
-  async function uploadToCloudinary(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    const res = await fetch(CLOUDINARY_URL, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) throw new Error("Failed to upload image to Cloudinary.");
-
-    const data = await res.json();
-    return data.secure_url; // URL of the uploaded image
   }
 
   async function onSubmit(data: FlashcardFormValues) {
@@ -86,53 +67,32 @@ export default function FlashcardsPage() {
     setError(null);
 
     try {
-      // ---------------------
-      // PDF UPLOAD
-      // ---------------------
-      if (data.pdfFile) {
-        const base64 = await fileToBase64(data.pdfFile);
-        const result = await generateFlashcards({ pdfData: base64 });
-        setGeneratedDeck(result);
-        localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
+      let result;
+      if (data.imageFile) {
+        const base64Image = await fileToBase64(data.imageFile);
+        result = await generateFlashcards({ imageData: base64Image });
+      } else if (data.pdfFile) {
+        const base64Pdf = await fileToBase64(data.pdfFile);
+        result = await generateFlashcards({ pdfData: base64Pdf });
+      } else if (data.notes) {
+        result = await generateFlashcards({ text: data.notes });
+      } else {
+        setError("Please provide some input.");
         setIsLoading(false);
         return;
       }
-
-      // ---------------------
-      // IMAGE UPLOAD (CLOUDINARY + OCR)
-      // ---------------------
-      if (data.imageFile) {
-        try {
-          // 1️⃣ Upload to Cloudinary
-          const imageUrl = await uploadToCloudinary(data.imageFile);
-
-          // 2️⃣ Send URL to your AI flow
-          const result = await generateFlashcards({ imageData: imageUrl });
-          setGeneratedDeck(result);
-          localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
-        } catch (err) {
-          console.error(err);
-          setError("Failed to upload or process the image. Make sure it's clear and readable.");
-        } finally {
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      // ---------------------
-      // TEXT INPUT
-      // ---------------------
-      if (data.notes) {
-        const result = await generateFlashcards({ text: data.notes });
-        setGeneratedDeck(result);
+      
+      setGeneratedDeck(result);
+      if (result && result.flashcards) {
         localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
       }
 
     } catch (err) {
       console.error(err);
-      setError("AI failed to generate flashcards. Try again.");
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+      setError(`AI failed to generate flashcards. ${errorMessage}`);
     } finally {
-      if (!data.pdfFile && !data.imageFile) setIsLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -140,7 +100,6 @@ export default function FlashcardsPage() {
 
   return (
     <div className="grid gap-8 md:grid-cols-2 animate-in fade-in-50">
-      {/* LEFT FORM */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Flashcard Generator</CardTitle>
@@ -152,7 +111,6 @@ export default function FlashcardsPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* NOTES INPUT */}
               <FormField
                 control={form.control}
                 name="notes"
@@ -162,7 +120,7 @@ export default function FlashcardsPage() {
                     <FormControl>
                       <Textarea
                         placeholder="Paste your class notes, textbook chapter, or any text here..."
-                        className="min-h-[250px] resize-y"
+                        className="min-h-[200px] resize-y"
                         {...field}
                       />
                     </FormControl>
@@ -180,11 +138,10 @@ export default function FlashcardsPage() {
                 </div>
               </div>
 
-              {/* PDF UPLOAD */}
               <FormField
                 control={form.control}
                 name="pdfFile"
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                     <FormLabel>Upload PDF</FormLabel>
                     <FormControl>
@@ -193,7 +150,8 @@ export default function FlashcardsPage() {
                         <Input 
                           type="file" 
                           accept=".pdf"
-                          onChange={(e) => field.onChange(e.target.files?.[0] || null)}
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                          {...rest}
                         />
                       </div>
                     </FormControl>
@@ -202,11 +160,10 @@ export default function FlashcardsPage() {
                 )}
               />
 
-              {/* IMAGE UPLOAD */}
               <FormField
                 control={form.control}
                 name="imageFile"
-                render={({ field }) => (
+                render={({ field: { onChange, value, ...rest } }) => (
                   <FormItem>
                     <FormLabel>Upload Image (Notes Photo)</FormLabel>
                     <FormControl>
@@ -214,8 +171,9 @@ export default function FlashcardsPage() {
                         <ImageIcon className="h-5 w-5 text-muted-foreground" />
                         <Input
                           type="file"
-                          accept="image/jpeg, image/png"
-                          onChange={(e) => field.onChange(e.target.files?.[0] || null)}
+                          accept="image/jpeg, image/png, image/webp"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                          {...rest}
                         />
                       </div>
                     </FormControl>
@@ -232,7 +190,6 @@ export default function FlashcardsPage() {
         </CardContent>
       </Card>
 
-      {/* RIGHT SIDE — PREVIEW / LOADING / ERROR */}
       <div className="space-y-6">
         {isLoading && (
           <Card className="flex items-center justify-center min-h-[500px]">
@@ -264,14 +221,13 @@ export default function FlashcardsPage() {
             </CardHeader>
 
             <CardContent className="text-center space-y-6">
-              <p className="font-semibold">Your deck includes:</p>
+               <p className="font-semibold">Your deck includes:</p>
               <ul className="text-sm text-muted-foreground list-disc list-inside">
                 <li>Q/A Pairs</li>
                 <li>Definitions</li>
                 <li>Concepts</li>
                 <li>Mnemonics</li>
               </ul>
-
               <Button size="lg" className="w-full" onClick={startPractice}>
                 Start Practicing
               </Button>
