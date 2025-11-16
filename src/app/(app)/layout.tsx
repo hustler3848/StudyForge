@@ -114,7 +114,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Settings">
                         <Link href="#">
-                            <Settings />
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
+                                <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
+                            </Avatar>
                             <span>Settings</span>
                         </Link>
                     </SidebarMenuButton>
