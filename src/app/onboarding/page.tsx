@@ -39,7 +39,10 @@ import { useState } from "react";
 const onboardingSchema = z.object({
   gradeLevel: z.string().min(1, "Please select your grade level."),
   subjects: z.array(z.string()).min(1, "Please add at least one subject."),
-  weeklyFreeHours: z.coerce.number().min(1, "Please enter your available hours.").max(100),
+  weeklyFreeHours: z.coerce
+    .number()
+    .min(1, "Please enter your available hours.")
+    .max(100),
 });
 
 type OnboardingFormValues = z.infer<typeof onboardingSchema>;
@@ -82,42 +85,46 @@ export default function OnboardingPage() {
   };
 
   const handleRemoveSubject = (subjectToRemove: string) => {
-    form.setValue("subjects", subjects.filter(s => s !== subjectToRemove));
+    form.setValue(
+      "subjects",
+      subjects.filter((s) => s !== subjectToRemove)
+    );
   };
-
 
   function onSubmit(data: OnboardingFormValues) {
     if (!user) return;
-    
-    // In a real app, you'd save this to Firestore
-    console.log("Onboarding data:", data);
 
     updateUserProfile({ profileComplete: true, profile: data });
     router.push("/dashboard");
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-2xl shadow-2xl">
+    <div className="flex min-h-screen w-full items-center justify-center p-4">
+      <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl font-headline">Welcome to StudyWise AI!</CardTitle>
+          <CardTitle className="text-xl md:text-2xl font-headline">
+            Welcome to StudyWise AI!
+          </CardTitle>
           <CardDescription>
             Let's personalize your experience. Tell us a bit about yourself.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="gradeLevel"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Grade/Class Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select your grade level" />
@@ -144,25 +151,41 @@ export default function OnboardingPage() {
                     value={subjectInput}
                     onChange={(e) => setSubjectInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleAddSubject();
                       }
                     }}
                   />
-                  <Button type="button" variant="secondary" onClick={handleAddSubject}>Add</Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleAddSubject}
+                  >
+                    Add
+                  </Button>
                 </div>
-                 <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2 min-h-[24px]">
                   {subjects.map((subject) => (
-                    <Badge key={subject} variant="secondary" className="pl-3 pr-1 py-1 text-sm">
+                    <Badge
+                      key={subject}
+                      variant="secondary"
+                      className="pl-3 pr-1 py-1 text-sm"
+                    >
                       {subject}
-                      <button type="button" onClick={() => handleRemoveSubject(subject)} className="ml-1 rounded-full hover:bg-background p-0.5">
-                        <X className="h-3 w-3"/>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSubject(subject)}
+                        className="ml-1 rounded-full hover:bg-background p-0.5"
+                      >
+                        <X className="h-3 w-3" />
                       </button>
                     </Badge>
                   ))}
                 </div>
-                 <FormMessage>{form.formState.errors.subjects?.message}</FormMessage>
+                <FormMessage>
+                  {form.formState.errors.subjects?.message}
+                </FormMessage>
               </FormItem>
 
               <FormField

@@ -1,9 +1,9 @@
 "use client";
 
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
-import { useAuth } from '@/hooks/use-auth';
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
+import { useAuth } from "@/hooks/use-auth";
 
 function GoogleIcon() {
   return (
@@ -32,18 +32,19 @@ export default function LoginPage() {
   const { signInWithGoogle, loading } = useAuth();
 
   return (
-    <div className="container mx-auto flex flex-col items-center justify-center gap-12 px-4 py-16">
-      <div className="flex flex-col items-center gap-4 text-center">
+    <div className="container mx-auto flex w-full flex-1 flex-col items-center justify-center gap-12 px-4 text-center">
+      <div className="flex flex-col items-center gap-4">
         <Logo />
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
           Unlock Your Academic Potential
         </h1>
-        <p className="max-w-3xl text-lg text-foreground/80">
-          Personalized study plans, instant essay feedback, and smart flashcards. All powered by AI to help you learn smarter, not harder.
+        <p className="max-w-xl text-base text-foreground/80 md:text-lg">
+          Personalized study plans, instant essay feedback, and smart
+          flashcards. All powered by AI to help you learn smarter, not harder.
         </p>
       </div>
 
-      <div className="flex flex-col items-center gap-6 w-full max-w-md">
+      <div className="flex flex-col items-center gap-6 w-full max-w-sm">
         <Button
           onClick={signInWithGoogle}
           disabled={loading}
