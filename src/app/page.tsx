@@ -281,6 +281,47 @@ const FeatureShowcaseSection = () => (
   </motion.section>
 );
 
+const benefits = [
+  "Saves 5–10 hours of planning per week",
+  "Keeps learning consistent",
+  "Makes every topic easy",
+  "Works for exams, coding, schools, colleges",
+  "Perfect for self-study"
+];
+
+const BenefitsSection = () => (
+  <motion.section
+    id="benefits"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    variants={sectionVariants}
+    className="py-20 md:py-28 bg-secondary/30"
+  >
+    <div className="container grid md:grid-cols-2 gap-12 items-center">
+      <motion.div variants={itemVariants}>
+        <h2 className="text-4xl font-extrabold font-headline">Why StudyWise?</h2>
+        <p className="mt-4 text-lg text-muted-foreground">
+          Focus on learning, not on logistics. We handle the planning so you can focus on what matters.
+        </p>
+        <ul className="mt-8 space-y-4">
+          {benefits.map((benefit, index) => (
+            <motion.li key={index} variants={itemVariants} className="flex items-center gap-3">
+              <CheckCircle className="h-6 w-6 text-green-500 shrink-0" />
+              <span className="text-lg text-foreground">{benefit}</span>
+            </motion.li>
+          ))}
+        </ul>
+      </motion.div>
+      <motion.div variants={itemVariants} className="relative h-96 w-full flex items-center justify-center overflow-hidden rounded-2xl border bg-background/50 p-8 shadow-lg">
+         <div className="absolute -top-10 -right-40 w-72 h-72 bg-purple-200/30 dark:bg-purple-500/10 rounded-full filter blur-3xl opacity-80 animate-blob"></div>
+         <div className="absolute -bottom-40 -left-10 w-72 h-72 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full filter blur-3xl opacity-80 animate-blob animation-delay-4000"></div>
+         <p className="text-muted-foreground text-center">Unlock your full potential with structured, AI-driven learning.</p>
+      </motion.div>
+    </div>
+  </motion.section>
+);
+
 const HowItWorksSection = () => (
   <motion.section
     id="how-it-works"
@@ -288,7 +329,7 @@ const HowItWorksSection = () => (
     whileInView="visible"
     viewport={{ once: true }}
     variants={sectionVariants}
-    className="py-20 md:py-28 bg-secondary/30"
+    className="py-20 md:py-28"
   >
     <div className="container">
       <div className="text-center max-w-3xl mx-auto mb-16">
@@ -448,6 +489,7 @@ export default function LandingPage() {
         <HeroSection />
         <TrustedSection />
         <FeatureShowcaseSection />
+        <BenefitsSection />
         <HowItWorksSection />
         <PricingSection />
       </main>
