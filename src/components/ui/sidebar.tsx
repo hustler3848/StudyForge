@@ -217,7 +217,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-           "peer hidden md:flex sticky top-0 h-screen flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
+           "peer hidden md:flex sticky top-0 h-screen flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out z-40",
            "group-data-[state=expanded]/sidebar-wrapper:w-[--sidebar-width]",
            "group-data-[state=collapsed]/sidebar-wrapper:w-[--sidebar-width-icon]",
            side === 'left' ? 'border-r' : 'border-l',
@@ -385,7 +385,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "relative flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden p-4",
+        "relative flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-visible p-4",
         className
       )}
       {...props}

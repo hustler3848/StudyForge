@@ -102,7 +102,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     >
                         <Link href={item.href}>
                         <item.icon />
-                        <span>{item.label}</span>
+                        <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">{item.label}</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -116,7 +116,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <SidebarMenuButton asChild tooltip="Settings">
                   <Link href="#">
                     <Settings/>
-                    <span>Settings</span>
+                    <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -124,7 +124,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
+          <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
               <SidebarTrigger className="md:hidden"/>
               <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
