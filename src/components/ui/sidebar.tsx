@@ -217,12 +217,13 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40 border-r relative",
+           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40 border-r",
            "group-data-[state=expanded]/sidebar-wrapper:w-[--sidebar-width]",
            "group-data-[state=collapsed]/sidebar-wrapper:w-[--sidebar-width-icon]",
            variant === 'floating' && 'm-2 rounded-lg border shadow',
            variant === 'floating' && state === 'collapsed' && 'm-2 w-[calc(var(--sidebar-width-icon)_+_1rem)]',
            variant === 'floating' && state === 'expanded' && 'w-[calc(var(--sidebar-width)_+_1rem)]',
+           "relative",
            className
         )}
         data-state={state}
@@ -770,3 +771,5 @@ export {
   SidebarTrigger,
   useSidebar,
 }
+
+    
