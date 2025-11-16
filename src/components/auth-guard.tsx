@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from '@/hooks/use-auth';
@@ -25,6 +26,22 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  // New check for profile completion
+  if (user && !user.profileComplete) {
+    // If on a page other than onboarding, redirect
+    if (typeof window !== 'undefined' && window.location.pathname !== '/onboarding') {
+      router.push('/onboarding');
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+          <div className="space-y-4 flex flex-col items-center">
+              <Skeleton className="h-12 w-48" />
+              <p>Redirecting to onboarding...</p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return <>{children}</>;

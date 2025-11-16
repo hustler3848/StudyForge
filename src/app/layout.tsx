@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
@@ -5,6 +6,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Space_Grotesk, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/context/theme-provider';
+import { FirebaseClientProvider } from '@/firebase';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -44,10 +46,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
+          <FirebaseClientProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
+          </FirebaseClientProvider>
         </ThemeProvider>
       </body>
     </html>

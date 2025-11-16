@@ -77,15 +77,15 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-        <CardDescription>
-          Get started with your AI-powered study partner.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
+     <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 bg-background">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+          <CardDescription>
+            Get started with your AI-powered study partner.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
@@ -113,7 +113,7 @@ export default function SignUpPage() {
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
               name="confirmPassword"
               render={({ field }) => (
@@ -130,30 +130,30 @@ export default function SignUpPage() {
               Create Account
             </Button>
           </form>
-        </Form>
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={signInWithGoogle}
-          disabled={loading}
-        >
-          <GoogleIcon />
-          Google
-        </Button>
-      </CardContent>
-      <CardFooter className="justify-center text-sm">
-        <p>Already have an account? <Link href="/signin" className="font-medium text-primary hover:underline">Log in</Link></p>
-      </CardFooter>
-    </Card>
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={signInWithGoogle}
+            disabled={loading}
+          >
+            <GoogleIcon />
+            Google
+          </Button>
+        </CardContent>
+        <CardFooter className="justify-center text-sm">
+          <p>Already have an account? <Link href="/signin" className="font-medium text-primary hover:underline">Log in</Link></p>
+        </CardFooter>
+      </Card>
+    </main>
   );
 }
