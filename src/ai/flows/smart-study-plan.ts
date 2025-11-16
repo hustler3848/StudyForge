@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview A smart study plan generator AI agent.
+ * @fileOverview A smart study plan generator AI agent using Groq.
  *
  * - generateStudyPlan - A function that handles the study plan generation process.
  * - GenerateStudyPlanInput - The input type for the generateStudyPlan function.
@@ -10,7 +10,10 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import Groq from 'groq-sdk';
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
 
 const GenerateStudyPlanInputSchema = z.object({
   profile: z
@@ -51,34 +54,6 @@ export async function generateStudyPlan(input: GenerateStudyPlanInput): Promise<
   return generateStudyPlanFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateStudyPlanPrompt',
-  input: {schema: GenerateStudyPlanInputSchema},
-  output: {schema: GenerateStudyPlanOutputSchema},
-  model: googleAI.model('gemini-2.5-flash'),
-  prompt: `You are an AI study plan generator. You will receive information about a student's profile, tasks, free time, and study goals, and you will generate a personalized study plan.
-
-Student Profile:
-Grade Level: {{{profile.gradeLevel}}}
-Subjects: {{#each profile.subjects}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}
-Exam Dates: {{#if profile.examDates}}{{#each profile.examDates}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}None{{/if}}
-Weekly Free Hours: {{{profile.weeklyFreeHours}}}
-
-Tasks:
-{{#each tasks}}{{{this}}}{{#unless @last}}\n{{/unless}}{{/each}}
-
-Free Time Slots:
-{{#each freeHours}}{{{this}}}{{#unless @last}}\n{{/unless}}{{/each}}
-
-Study Goals:
-{{{studyGoals}}}
-
-
-Generate a personalized study plan with daily sessions, subject priorities (high, medium, low), and estimated time for each session. Also, provide a 7-day timetable outlining the study plan.
-
-Output:
-{{output}}`,
-});
 
 const generateStudyPlanFlow = ai.defineFlow(
   {
@@ -86,8 +61,52 @@ const generateStudyPlanFlow = ai.defineFlow(
     inputSchema: GenerateStudyPlanInputSchema,
     outputSchema: GenerateStudyPlanOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const systemPrompt = `You are an AI study plan generator. You will receive information about a student's profile, tasks, free time, and study goals, and you will generate a personalized study plan.
+
+Generate a personalized study plan with daily sessions, subject priorities (high, medium, low), and estimated time for each session. Also, provide a 7-day timetable outlining the study plan.
+
+You must respond in a valid JSON format. Do not include any markdown or other formatting in your response. The JSON object should conform to the following Zod schema:
+${JSON.stringify(GenerateStudyPlanOutputSchema.shape)}
+`;
+
+    const userPrompt = `
+Student Profile:
+Grade Level: ${input.profile.gradeLevel}
+Subjects: ${input.profile.subjects.join(', ')}
+Exam Dates: ${input.profile.examDates?.join(', ') || 'None'}
+Weekly Free Hours: ${input.profile.weeklyFreeHours}
+
+Tasks:
+${input.tasks.join('\n')}
+
+Free Time Slots:
+${input.freeHours.join('\n')}
+
+Study Goals:
+${input.studyGoals}
+`;
+
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-70b-versatile",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const responseText = result.choices[0].message.content;
+
+    // It's possible the model still wraps the JSON in markdown
+    const cleanedResponse = responseText?.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    try {
+        const parsed = JSON.parse(cleanedResponse || '{}');
+        return GenerateStudyPlanOutputSchema.parse(parsed);
+    } catch (e) {
+        console.error("Failed to parse AI response:", e);
+        throw new Error("The AI returned an invalid response format.");
+    }
   }
 );
