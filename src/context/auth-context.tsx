@@ -5,7 +5,7 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppUser } from '@/lib/types';
 import { useFirebase } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut, User, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AuthContextType {
@@ -22,46 +22,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { auth, firestore, isUserLoading } = useFirebase();
+  const { auth, firestore } = useFirebase();
 
   useEffect(() => {
-    if (isUserLoading) {
-      setLoading(true);
-      return;
-    }
-    if (!auth.currentUser) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
-    const userDocRef = doc(firestore, `users/${auth.currentUser.uid}`);
-    getDoc(userDocRef).then(docSnap => {
-      if (docSnap.exists()) {
-        const appUser = docSnap.data() as AppUser;
-        setUser(appUser);
-        if (!appUser.profileComplete) {
-          router.push('/onboarding');
-        } else {
-           if (window.location.pathname === '/onboarding' || window.location.pathname === '/signin' || window.location.pathname === '/signup') {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
+        const docSnap = await getDoc(userDocRef);
+        if (docSnap.exists()) {
+          const appUser = docSnap.data() as AppUser;
+          setUser(appUser);
+          if (!appUser.profileComplete) {
+            if (window.location.pathname !== '/onboarding') {
+              router.push('/onboarding');
+            }
+          } else if (['/onboarding', '/signin', '/signup', '/login'].includes(window.location.pathname)) {
             router.push('/dashboard');
           }
+        } else {
+           // This case is for a user who exists in Firebase Auth but not Firestore.
+           // This can happen if the doc creation failed on first login.
+           // We'll treat them as a new user and send to onboarding.
+           const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
+           await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp() });
+           setUser(newAppUser);
+           router.push('/onboarding');
         }
       } else {
-        // This case is handled by signInWithGoogle on first login
-        // but as a fallback, we can create a profile here too.
-        const newUser = createUserProfileFromFirebaseUser(auth.currentUser!);
-        setDoc(doc(firestore, `users/${auth.currentUser!.uid}`), newUser);
-        setUser(newUser);
-        router.push('/onboarding');
+        setUser(null);
       }
-      setLoading(false);
-    }).catch(error => {
-      console.error("Error fetching user document:", error);
       setLoading(false);
     });
 
-  }, [isUserLoading, auth.currentUser, router, firestore]);
+    return () => unsubscribe();
+  }, [auth, firestore, router]);
+
 
   const createUserProfileFromFirebaseUser = (firebaseUser: User): AppUser => ({
     uid: firebaseUser.uid,
@@ -88,10 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newAppUser);
         router.push('/onboarding');
       } else {
-        // Existing user
+        // Existing user - the onAuthStateChanged listener will handle setting user state and routing
         const appUser = docSnap.data() as AppUser;
         setUser(appUser);
-        if (!appUser.profileComplete) {
+         if (!appUser.profileComplete) {
           router.push('/onboarding');
         } else {
           router.push('/dashboard');
@@ -101,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error("Error during sign-in:", error);
       setUser(null);
     } finally {
-      setLoading(false);
+      // setLoading(false) is handled by the onAuthStateChanged listener
     }
   };
 
@@ -109,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     await signOut(auth);
     setUser(null);
-    setLoading(false);
+    // No need to set loading to false here, onAuthStateChanged will do it
     router.push('/signin');
   };
 
