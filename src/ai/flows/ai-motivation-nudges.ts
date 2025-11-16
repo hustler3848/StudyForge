@@ -1,65 +1,45 @@
-
 'use server';
 
-/**
- * @fileOverview An AI agent that provides motivational messages using Groq.
- *
- * - generateMotivationNudge - A function that generates a motivational message.
- * - MotivationNudgeOutput - The return type for the generateMotivationNudge function.
- */
-
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import Groq from 'groq-sdk';
+import Groq from "groq-sdk";
+import { z } from "zod";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const MotivationNudgeOutputSchema = z.object({
-  message: z
-    .string()
-    .describe('A motivational message to encourage the user to stay focused.'),
+  message: z.string(),
 });
-export type MotivationNudgeOutput = z.infer<
-  typeof MotivationNudgeOutputSchema
->;
+
+export type MotivationNudgeOutput = z.infer<typeof MotivationNudgeOutputSchema>;
 
 export async function generateMotivationNudge(): Promise<MotivationNudgeOutput> {
-  return generateMotivationNudgeFlow();
-}
-
-const generateMotivationNudgeFlow = ai.defineFlow(
-  {
-    name: 'generateMotivationNudgeFlow',
-    outputSchema: MotivationNudgeOutputSchema,
-  },
-  async () => {
-    try {
-      const systemPrompt = `
-You are a motivational coach. 
-Generate a short, encouraging message to help a student stay focused during a study session.
-The message should be no more than 20 words.
-Return ONLY VALID JSON of the shape: { "message": "Your motivational quote here." }
-Do not include any other text or markdown.
+  try {
+    const systemPrompt = `
+You are a motivational coach.
+Generate a short encouraging message (max 20 words).
+Return ONLY valid JSON like:
+{ "message": "text" }
 `;
 
-      const result = await groq.chat.completions.create({
-        model: 'llama3-8b-8192',
-        messages: [{ role: 'system', content: systemPrompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.8,
-      });
+    const result = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
+      messages: [{ role: "system", content: systemPrompt }],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
 
-      const jsonText = result.choices[0].message.content || '{}';
-      const parsed = JSON.parse(jsonText);
+    const content = result.choices[0].message?.content ?? "{}";
 
-      // Validate with Zod
-      return MotivationNudgeOutputSchema.parse(parsed);
-    } catch (error) {
-      console.error('Error generating motivation nudge with Groq:', error);
-      // Provide a fallback message in case of an API error
-      return {
-        message: "The secret to getting ahead is getting started.",
-      };
+    const parsed = MotivationNudgeOutputSchema.safeParse(JSON.parse(content));
+    if (!parsed.success) {
+      throw new Error("Invalid JSON returned by Groq");
     }
+
+    return parsed.data;
+  } catch (err) {
+    console.error("GROQ ERROR:", err);
+
+    return {
+      message: "Keep pushing — small steps lead to big progress.",
+    };
   }
-);
+}
