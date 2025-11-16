@@ -52,6 +52,7 @@ const ScoreCircle = ({ score, label }: { score: number; label: string }) => (
 export default function EssayReviewPage() {
   const [feedback, setFeedback] = useState<AnalyzeEssayOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<EssayFormValues>({
     resolver: zodResolver(essaySchema),
@@ -61,12 +62,13 @@ export default function EssayReviewPage() {
   async function onSubmit(data: EssayFormValues) {
     setIsLoading(true);
     setFeedback(null);
+    setError(null);
     try {
       const result = await analyzeEssay({ text: data.essayText });
       setFeedback(result);
     } catch (error) {
       console.error('Error analyzing essay:', error);
-      // You could show a toast notification here
+      setError('Sorry, the AI failed to provide feedback. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -117,6 +119,13 @@ export default function EssayReviewPage() {
             </div>
           </Card>
         )}
+        
+        {error && (
+            <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
 
         {feedback && (
           <Card className="shadow-lg animate-in fade-in-50">
@@ -162,7 +171,7 @@ export default function EssayReviewPage() {
           </Card>
         )}
         
-        {!isLoading && !feedback && (
+        {!isLoading && !feedback && !error && (
           <Card className="flex items-center justify-center min-h-[500px]">
             <div className="text-center text-muted-foreground p-8">
               <FileText className="h-12 w-12 mx-auto mb-4" />

@@ -5,12 +5,12 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Bot, BookOpen, Sparkles, BrainCircuit } from 'lucide-react';
+import { BookOpen, Sparkles, BrainCircuit } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 import { generateFlashcards, type GenerateFlashcardsOutput } from '@/ai/flows/flashcard-generation';
@@ -24,6 +24,7 @@ type FlashcardFormValues = z.infer<typeof flashcardSchema>;
 export default function FlashcardsPage() {
   const [generatedDeck, setGeneratedDeck] = useState<GenerateFlashcardsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const form = useForm<FlashcardFormValues>({
@@ -34,21 +35,20 @@ export default function FlashcardsPage() {
   async function onSubmit(data: FlashcardFormValues) {
     setIsLoading(true);
     setGeneratedDeck(null);
+    setError(null);
     try {
       const result = await generateFlashcards({ text: data.notes });
       setGeneratedDeck(result);
-      // In a real app, we would save this deck to Firestore and get a deckId
-      // For now, we'll store it in localStorage to pass to the practice page
       localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
     } catch (error) {
       console.error('Error generating flashcards:', error);
+      setError('Sorry, the AI failed to generate flashcards. Please try again.');
     } finally {
       setIsLoading(false);
     }
   }
   
   const startPractice = () => {
-    // In a real app, this would route to /flashcards/{deckId}
     router.push('/flashcards/practice');
   }
 
@@ -97,6 +97,13 @@ export default function FlashcardsPage() {
                 </div>
             </Card>
         )}
+        
+        {error && (
+            <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
 
         {generatedDeck && (
             <Card className="shadow-lg animate-in fade-in-50">
@@ -126,7 +133,7 @@ export default function FlashcardsPage() {
             </Card>
         )}
         
-        {!isLoading && !generatedDeck && (
+        {!isLoading && !generatedDeck && !error && (
             <Card className="flex items-center justify-center min-h-[500px]">
                 <div className="text-center text-muted-foreground p-8">
                     <BookOpen className="h-12 w-12 mx-auto mb-4" />

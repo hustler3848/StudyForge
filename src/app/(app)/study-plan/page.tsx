@@ -15,6 +15,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { generateStudyPlan, type GenerateStudyPlanOutput } from '@/ai/flows/smart-study-plan';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 const studyPlanSchema = z.object({
   tasks: z.array(z.object({ value: z.string().min(1, 'Task cannot be empty.') })).min(1, 'Please add at least one task.'),
@@ -80,6 +82,7 @@ export default function StudyPlanPage() {
   const { user } = useAuth();
   const [plan, setPlan] = useState<GenerateStudyPlanOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<StudyPlanFormValues>({
     resolver: zodResolver(studyPlanSchema),
@@ -104,6 +107,7 @@ export default function StudyPlanPage() {
     if (!user || !user.profile) return;
     setIsLoading(true);
     setPlan(null);
+    setError(null);
 
     const input = {
         profile: {
@@ -121,6 +125,7 @@ export default function StudyPlanPage() {
       setPlan(result);
     } catch (error) {
       console.error('Error generating study plan:', error);
+      setError('Sorry, the AI failed to generate a study plan. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -224,6 +229,13 @@ export default function StudyPlanPage() {
                 </div>
             </Card>
         )}
+
+        {error && (
+            <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        )}
         
         {plan && (
             <Card className="shadow-lg animate-in fade-in-50">
@@ -289,7 +301,7 @@ export default function StudyPlanPage() {
             </Card>
         )}
 
-        {!isLoading && !plan && (
+        {!isLoading && !plan && !error && (
             <Card className="flex items-center justify-center min-h-[500px]">
                 <div className="text-center text-muted-foreground p-8">
                     <Calendar className="h-12 w-12 mx-auto mb-4" />

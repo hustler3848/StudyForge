@@ -2,10 +2,8 @@
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/hooks/use-auth';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function GoogleIcon() {
   return (
@@ -32,7 +30,6 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   const { signInWithGoogle, loading } = useAuth();
-  const demoVideoPlaceholder = PlaceHolderImages.find(p => p.id === 'demo-video');
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center gap-12 px-4 py-16">
@@ -57,30 +54,6 @@ export default function LoginPage() {
           Log in with Google
         </Button>
       </div>
-
-      {demoVideoPlaceholder && (
-        <div className="w-full max-w-4xl mt-8">
-          <p className="text-center text-sm font-medium text-foreground/70 mb-4">WATCH IT IN ACTION</p>
-          <Card className="overflow-hidden shadow-2xl border-2 border-primary/20">
-            <CardContent className="p-0">
-              <div className="aspect-video relative">
-                <Image
-                  src={demoVideoPlaceholder.imageUrl}
-                  alt={demoVideoPlaceholder.description}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={demoVideoPlaceholder.imageHint}
-                />
-                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <button className="bg-white/20 backdrop-blur-sm rounded-full p-4 hover:bg-white/30 transition-colors">
-                    <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  </button>
-                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
