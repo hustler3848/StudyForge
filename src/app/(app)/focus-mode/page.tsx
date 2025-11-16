@@ -5,10 +5,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, RotateCw, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generateMotivationNudge } from '@/ai/flows/ai-motivation-nudges';
 
 const FOCUS_DURATION = 25 * 60; // 25 minutes
-const NUDGE_INTERVAL = 10 * 60 * 1000; // 10 minutes in ms
+const NUDGE_INTERVAL = 5 * 60 * 1000; // 5 minutes in ms
+
+const motivationalNudges = [
+  "Believe you can and you're halfway there.",
+  "The secret to getting ahead is getting started.",
+  "Don't watch the clock; do what it does. Keep going.",
+  "The future depends on what you do today.",
+  "You are capable of more than you know.",
+  "Every expert was once a beginner. Keep learning.",
+  "Push yourself, because no one else is going to do it for you.",
+  "A little progress each day adds up to big results.",
+  "Stay positive, work hard, make it happen.",
+  "Success isn't overnight. It's when every day you get a little better than the day before."
+];
+
 
 export default function FocusModePage() {
   const [time, setTime] = useState(FOCUS_DURATION);
@@ -36,20 +49,13 @@ export default function FocusModePage() {
     };
   }, [isActive, time]);
   
-  const showMotivationNudge = async () => {
-    try {
-      const { message } = await generateMotivationNudge();
-      toast({
-        title: "Keep Going! 💪",
-        description: message,
-      });
-    } catch (error) {
-      console.error("Failed to get motivation nudge:", error);
-      toast({
-        title: "Keep Going! 💪",
-        description: "You're doing great! Stay focused.",
-      });
-    }
+  const showMotivationNudge = () => {
+    const randomIndex = Math.floor(Math.random() * motivationalNudges.length);
+    const message = motivationalNudges[randomIndex];
+    toast({
+      title: "Keep Going! 💪",
+      description: message,
+    });
   };
 
   const toggleTimer = () => {
