@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateStudyPlanInputSchema = z.object({
   profile: z
@@ -54,6 +55,7 @@ const prompt = ai.definePrompt({
   name: 'generateStudyPlanPrompt',
   input: {schema: GenerateStudyPlanInputSchema},
   output: {schema: GenerateStudyPlanOutputSchema},
+  model: googleAI.model('gemini-2.5-flash'),
   prompt: `You are an AI study plan generator. You will receive information about a student's profile, tasks, free time, and study goals, and you will generate a personalized study plan.
 
 Student Profile:

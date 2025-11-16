@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const AnalyzeEssayInputSchema = z.object({
   text: z.string().describe('The text of the essay to analyze.'),
@@ -33,6 +34,7 @@ const prompt = ai.definePrompt({
   name: 'analyzeEssayPrompt',
   input: {schema: AnalyzeEssayInputSchema},
   output: {schema: AnalyzeEssayOutputSchema},
+  model: googleAI.model('gemini-2.5-flash'),
   prompt: `You are an AI essay feedback assistant. Analyze the essay provided and provide feedback on the following aspects:\n\n- Grammar: Provide a grammar score from 0-100.\n- Readability: Provide a readability score.\n- Clarity: Provide suggestions for improving the clarity of the essay.\n- Structure: Provide suggestions for improving the structure of the essay.\n- Tone: Analyze the tone of the essay.\n- Rewrite: Provide a full corrected rewrite of the essay.\n\nEssay:\n{{{text}}}`,
 });
 

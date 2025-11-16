@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateFlashcardsInputSchema = z.object({
   text: z
@@ -39,6 +40,7 @@ const prompt = ai.definePrompt({
   name: 'generateFlashcardsPrompt',
   input: {schema: GenerateFlashcardsInputSchema},
   output: {schema: GenerateFlashcardsOutputSchema},
+  model: googleAI.model('gemini-2.5-flash'),
   prompt: `You are an expert educator who can create flashcards from notes or text.
 
   Given the following text, extract Q/A pairs, key definitions, concepts, and mnemonics to create flashcards.
