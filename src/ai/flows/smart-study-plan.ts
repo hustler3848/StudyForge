@@ -1,59 +1,43 @@
 'use server';
 
-/**
- * @fileOverview A smart study plan generator AI agent using Groq.
- *
- * - generateStudyPlan - A function that handles the study plan generation process.
- * - GenerateStudyPlanInput - The input type for the generateStudyPlan function.
- * - GenerateStudyPlanOutput - The return type for the generateStudyPlan function.
- */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 import Groq from 'groq-sdk';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-
+// SCHEMAS
 const GenerateStudyPlanInputSchema = z.object({
-  profile: z
-    .object({
-      gradeLevel: z.string().describe('The grade or class level of the student.'),
-      subjects: z.array(z.string()).describe('The subjects the student is studying.'),
-      examDates: z.array(z.string()).optional().describe('Optional exam dates.'),
-      weeklyFreeHours: z
-        .number()
-        .describe('The number of free hours the student has per week for studying.'),
-    })
-    .describe('The profile of the student.'),
-  tasks: z
-    .array(z.string())
-    .describe('A list of upcoming tests and assignments.'),
-  freeHours: z.array(z.string()).describe('The available free time slots for studying.'),
-  studyGoals: z.string().describe('The study goals of the student.'),
+  profile: z.object({
+    gradeLevel: z.string(),
+    subjects: z.array(z.string()),
+    examDates: z.array(z.string()).optional(),
+    weeklyFreeHours: z.number(),
+  }),
+  tasks: z.array(z.string()),
+  freeHours: z.array(z.string()),
+  studyGoals: z.string(),
 });
 
 export type GenerateStudyPlanInput = z.infer<typeof GenerateStudyPlanInputSchema>;
 
 const GenerateStudyPlanOutputSchema = z.object({
-  dailySessions: z
-    .array(
-      z.object({
-        subject: z.string().describe('The subject to study.'),
-        priority: z.string().describe('The priority of the subject (high, medium, low).'),
-        estimatedTime: z.string().describe('The estimated time to spend on the subject.'),
-      })
-    )
-    .describe('A list of daily study sessions.'),
-  weeklyTimetable: z.string().describe('A 7-day timetable outlining the study plan.'),
+  dailySessions: z.array(
+    z.object({
+      subject: z.string(),
+      priority: z.string(),
+      estimatedTime: z.string(),
+    })
+  ),
+  weeklyTimetable: z.string(),
 });
 
 export type GenerateStudyPlanOutput = z.infer<typeof GenerateStudyPlanOutputSchema>;
 
-export async function generateStudyPlan(input: GenerateStudyPlanInput): Promise<GenerateStudyPlanOutput> {
+// MAIN FUNCTION
+export async function generateStudyPlan(input: GenerateStudyPlanInput) {
   return generateStudyPlanFlow(input);
 }
-
 
 const generateStudyPlanFlow = ai.defineFlow(
   {
@@ -62,12 +46,27 @@ const generateStudyPlanFlow = ai.defineFlow(
     outputSchema: GenerateStudyPlanOutputSchema,
   },
   async (input) => {
-    const systemPrompt = `You are an AI study plan generator. You will receive information about a student's profile, tasks, free time, and study goals, and you will generate a personalized study plan.
 
-Generate a personalized study plan with daily sessions, subject priorities (high, medium, low), and estimated time for each session. Also, provide a 7-day timetable outlining the study plan.
+    const systemPrompt = `
+You generate study plans in STRICT JSON ONLY.
+You MUST ALWAYS return all required fields:
+- dailySessions[] must contain "subject", "priority", "estimatedTime"
+- weeklyTimetable must be a string
 
-You must respond in a valid JSON format. Do not include any markdown or other formatting in your response. The JSON object should conform to the following Zod schema:
-${JSON.stringify(GenerateStudyPlanOutputSchema.shape)}
+If unsure, make up reasonable values. NEVER leave fields empty or undefined.
+Return ONLY valid JSON WITHOUT markdown or commentary.
+
+The JSON must match exactly this shape:
+{
+  "dailySessions": [
+    {
+      "subject": "string",
+      "priority": "high | medium | low",
+      "estimatedTime": "string"
+    }
+  ],
+  "weeklyTimetable": "string"
+}
 `;
 
     const userPrompt = `
@@ -88,7 +87,7 @@ ${input.studyGoals}
 `;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
@@ -96,17 +95,31 @@ ${input.studyGoals}
       response_format: { type: "json_object" },
     });
 
-    const responseText = result.choices[0].message.content;
+    let jsonText = result.choices[0].message.content || "{}";
 
-    // It's possible the model still wraps the JSON in markdown
-    const cleanedResponse = responseText?.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Remove accidental code fences
+    jsonText = jsonText.replace(/```json/g, "").replace(/```/g, "").trim();
 
+    let parsed;
     try {
-        const parsed = JSON.parse(cleanedResponse || '{}');
-        return GenerateStudyPlanOutputSchema.parse(parsed);
+      parsed = JSON.parse(jsonText);
     } catch (e) {
-        console.error("Failed to parse AI response:", e);
-        throw new Error("The AI returned an invalid response format.");
+      console.error("JSON parse error:", jsonText);
+      throw new Error("Groq returned invalid JSON.");
     }
+
+    // 🛡 FIX: Fill missing fields (Groq sometimes forgets)
+    if (Array.isArray(parsed.dailySessions)) {
+      parsed.dailySessions = parsed.dailySessions.map((s: any) => ({
+        subject: s.subject || "General Study",
+        priority: s.priority || "medium",
+        estimatedTime: s.estimatedTime || "1 hour",
+      }));
+    }
+
+    parsed.weeklyTimetable = parsed.weeklyTimetable || "Timetable unavailable";
+
+    // ZOD VALIDATION
+    return GenerateStudyPlanOutputSchema.parse(parsed);
   }
 );
