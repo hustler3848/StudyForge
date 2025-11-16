@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Lightbulb, CheckCircle, BarChart, BookText, Bot } from 'lucide-react';
+import { Lightbulb, CheckCircle, BarChart, BookText, Bot, FileText } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { analyzeEssay, type AnalyzeEssayOutput } from '@/ai/flows/essay-feedback';
 
