@@ -232,7 +232,7 @@ const Sidebar = React.forwardRef<
         data-side={side}
         {...props}
       >
-        <div className="relative h-full w-full">{children}</div>
+        <div className="relative h-full w-full flex flex-col">{children}</div>
       </aside>
     )
   }
@@ -302,7 +302,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh w-full flex-1 flex-col bg-background transition-all duration-300 ease-in-out",
+        "relative flex min-h-svh flex-1 flex-col bg-background transition-all duration-300 ease-in-out",
         "group-data-[state=expanded]/sidebar-wrapper:md:ml-[--sidebar-width]",
         "group-data-[state=collapsed]/sidebar-wrapper:md:ml-[--sidebar-width-icon]",
         className
