@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { motion } from 'framer-motion';
 
 function GoogleIcon() {
   return (
@@ -78,84 +79,90 @@ export default function SignUpPage() {
 
   return (
      <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-          <CardDescription>
-            Get started with your AI-powered study partner.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full" disabled>
-                Create Account
-              </Button>
-            </form>
-          </Form>
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+            <CardDescription>
+              Get started with your AI-powered study partner.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="name@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input type="password" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full" disabled>
+                  Create Account
+                </Button>
+              </form>
+            </Form>
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={signInWithGoogle}
-            disabled={loading}
-          >
-            <GoogleIcon />
-            Google
-          </Button>
-        </CardContent>
-        <CardFooter className="justify-center text-sm">
-          <p>Already have an account? <Link href="/signin" className="font-medium text-primary hover:underline">Log in</Link></p>
-        </CardFooter>
-      </Card>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={signInWithGoogle}
+              disabled={loading}
+            >
+              <GoogleIcon />
+              Google
+            </Button>
+          </CardContent>
+          <CardFooter className="justify-center text-sm">
+            <p>Already have an account? <Link href="/signin" className="font-medium text-primary hover:underline">Log in</Link></p>
+          </CardFooter>
+        </Card>
+      </motion.div>
     </main>
   );
 }

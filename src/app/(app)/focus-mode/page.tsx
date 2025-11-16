@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, RotateCw, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FOCUS_DURATION = 25 * 60; // 25 minutes
 const NUDGE_INTERVAL = 5 * 60 * 1000; // 5 minutes in ms
@@ -87,39 +88,55 @@ export default function FocusModePage() {
   };
 
   return (
-    <div className="flex justify-center items-center h-[70vh] animate-in fade-in-50">
-      <Card className="w-full max-w-md text-center">
-        <CardContent className="p-8">
-            {isComplete ? (
-                <div className="space-y-6">
-                    <Trophy className="h-24 w-24 mx-auto text-yellow-400" />
-                    <h2 className="text-3xl font-bold font-headline">Session Complete!</h2>
-                    <p className="text-muted-foreground">Great work! You've completed a full focus session.</p>
-                    <Button onClick={resetTimer} className="w-full">
-                        <RotateCw className="mr-2 h-4 w-4" /> Start New Session
-                    </Button>
-                </div>
-            ) : (
-                <div className="space-y-8">
-                    <h2 className="text-2xl font-semibold text-muted-foreground">Focus Mode</h2>
-                    <div className="font-mono text-8xl font-bold text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {formatTime(time)}
-                    </div>
-                    <div className="flex gap-4 justify-center">
-                        <Button onClick={toggleTimer} size="lg" className="w-36">
-                            {isActive ? <Pause className="mr-2" /> : <Play className="mr-2" />}
-                            {isActive ? 'Pause' : 'Start'}
-                        </Button>
-                        <Button onClick={resetTimer} variant="secondary" size="lg">
-                            <RotateCw className="mr-2" /> Reset
-                        </Button>
-                    </div>
-                </div>
-            )}
-        </CardContent>
-      </Card>
+    <div className="flex justify-center items-center h-[70vh]">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="p-8">
+            <AnimatePresence mode="wait">
+              {isComplete ? (
+                  <motion.div 
+                    key="complete"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                  >
+                      <Trophy className="h-24 w-24 mx-auto text-yellow-400" />
+                      <h2 className="text-3xl font-bold font-headline">Session Complete!</h2>
+                      <p className="text-muted-foreground">Great work! You've completed a full focus session.</p>
+                      <Button onClick={resetTimer} className="w-full">
+                          <RotateCw className="mr-2 h-4 w-4" /> Start New Session
+                      </Button>
+                  </motion.div>
+              ) : (
+                  <motion.div 
+                    key="timer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-8"
+                  >
+                      <h2 className="text-2xl font-semibold text-muted-foreground">Focus Mode</h2>
+                      <div className="font-mono text-8xl font-bold text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                          {formatTime(time)}
+                      </div>
+                      <div className="flex gap-4 justify-center">
+                          <Button onClick={toggleTimer} size="lg" className="w-36">
+                              {isActive ? <Pause className="mr-2" /> : <Play className="mr-2" />}
+                              {isActive ? 'Pause' : 'Start'}
+                          </Button>
+                          <Button onClick={resetTimer} variant="secondary" size="lg">
+                              <RotateCw className="mr-2" /> Reset
+                          </Button>
+                      </div>
+                  </motion.div>
+              )}
+            </AnimatePresence>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
-
-    

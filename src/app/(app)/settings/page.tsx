@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Trophy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
 
 const StudyStreak = ({ streak }: { streak: number }) => (
   <div className="p-6 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-400 text-primary-foreground text-center">
@@ -23,6 +24,25 @@ const StudyStreak = ({ streak }: { streak: number }) => (
   </div>
 );
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
+
+
 export default function SettingsPage() {
   const { user } = useAuth();
   
@@ -32,16 +52,24 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto animate-in fade-in-50">
-      <div className="space-y-2">
+    <motion.div 
+      className="space-y-8 max-w-4xl mx-auto"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div className="space-y-2" variants={itemVariants}>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
           Manage your account, profile, and achievements.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-8">
+      <motion.div 
+        className="grid gap-8 md:grid-cols-3"
+        variants={containerVariants}
+      >
+        <motion.div className="md:col-span-2 space-y-8" variants={itemVariants}>
             {/* Profile Section */}
             <Card>
                 <CardHeader>
@@ -82,9 +110,9 @@ export default function SettingsPage() {
                 </div>
                 </CardContent>
             </Card>
-        </div>
+        </motion.div>
 
-        <div className="space-y-8">
+        <motion.div className="space-y-8" variants={itemVariants}>
              {/* Achievements Section */}
             <Card>
                 <CardHeader>
@@ -101,10 +129,8 @@ export default function SettingsPage() {
                     )}
                 </CardContent>
             </Card>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
-
-    

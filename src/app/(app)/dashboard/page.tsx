@@ -30,6 +30,25 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { generateMotivationNudge } from "@/ai/flows/ai-motivation-nudges";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
 
 const features = [
   {
@@ -101,42 +120,55 @@ export default function DashboardPage() {
   const upcomingTasks = user?.studyPlan?.dailySessions || [];
 
   return (
-    <div className="animate-in fade-in-50 space-y-8">
-      <div>
+    <motion.div
+      className="space-y-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div variants={itemVariants}>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
           Welcome back, {user?.displayName?.split(" ")[0] || "Student"}!
         </h1>
         <p className="text-muted-foreground mt-2">
           Ready to have a productive day? Let's get started.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <motion.div
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        variants={containerVariants}
+      >
         {features.map((feature) => (
-          <Link href={feature.href} key={feature.title} className="block group">
-            <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-lg hover:border-primary/50">
-              <CardHeader>
-                <div
-                  className={`p-3 rounded-full w-min ${feature.bgColor}`}
-                >
-                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <CardTitle className="text-lg font-semibold">
-                  {feature.title}
-                </CardTitle>
-                <CardDescription className="mt-1 text-sm">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          </Link>
+          <motion.div key={feature.title} variants={itemVariants}>
+            <Link href={feature.href} className="block group">
+              <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-lg hover:border-primary/50">
+                <CardHeader>
+                  <div
+                    className={`p-3 rounded-full w-min ${feature.bgColor}`}
+                  >
+                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <CardTitle className="text-lg font-semibold">
+                    {feature.title}
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-sm">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <motion.div
+        className="grid gap-6 lg:grid-cols-3"
+        variants={containerVariants}
+      >
+        <motion.div className="lg:col-span-2" variants={itemVariants}>
           <Card>
             <CardHeader>
               <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
@@ -195,8 +227,8 @@ export default function DashboardPage() {
               </CardContent>
             )}
           </Card>
-        </div>
-        <div className="space-y-6">
+        </motion.div>
+        <motion.div className="space-y-6" variants={itemVariants}>
           <MotivationalQuote />
           <Card>
              <CardHeader>
@@ -217,10 +249,8 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }
-
-    
