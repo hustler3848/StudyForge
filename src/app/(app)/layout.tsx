@@ -12,18 +12,16 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupAction,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   LayoutGrid,
   LogOut,
   Settings,
-  Folder,
-  Compass,
-  Plus,
+  BookOpen,
+  BrainCircuit,
+  CalendarDays,
+  Clock,
   Sun,
   Moon,
 } from 'lucide-react';
@@ -42,8 +40,10 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/my-collection', label: 'My Collection', icon: Folder },
-  { href: '/explore', label: 'Explore', icon: Compass },
+  { href: '/essay-review', label: 'Essay Review', icon: BookOpen },
+  { href: '/flashcards', label: 'Flashcards', icon: BrainCircuit },
+  { href: '/study-plan', label: 'Study Plan', icon: CalendarDays },
+  { href: '/focus-mode', label: 'Focus Mode', icon: Clock },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -59,7 +59,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar collapsible="icon" side="left" variant="sidebar">
+        <Sidebar side="left" collapsible="icon">
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -80,23 +80,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-            <SidebarGroup className="mt-4">
-                <SidebarGroupLabel className="flex items-center">
-                    <span>Folders</span>
-                </SidebarGroupLabel>
-                <SidebarGroupAction>
-                    <Plus/>
-                </SidebarGroupAction>
-            </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
              <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                        <Link href="#">
-                            <Settings/>
-                            <span>Settings</span>
-                        </Link>
+                    <SidebarMenuButton tooltip="Settings">
+                        <Settings/>
+                        <span>Settings</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
              </SidebarMenu>
@@ -139,7 +129,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
               </div>
           </header>
-          <main className="p-6 flex-1">{children}</main>
+          <main className="p-6 lg:p-8 flex-1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>

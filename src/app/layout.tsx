@@ -12,6 +12,7 @@ const fontBody = Inter({
 
 const fontHeadline = Inter({
   subsets: ['latin'],
+  weight: ['400', '700'],
   variable: '--font-headline',
 });
 

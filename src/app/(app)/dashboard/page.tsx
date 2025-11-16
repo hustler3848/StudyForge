@@ -5,91 +5,119 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {
-  Plus,
-  Upload,
-  Code,
-  Eye,
-  Bookmark,
-  Star,
-  ChevronRight,
+  BookOpen,
+  BrainCircuit,
+  CalendarDays,
+  Clock,
+  ArrowRight,
 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
-const stats = [
+const features = [
   {
-    title: 'Total Snippets',
-    value: '0',
-    icon: Code,
+    title: 'Essay Review',
+    description: 'Get instant AI feedback on your writing.',
+    href: '/essay-review',
+    icon: BookOpen,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50',
   },
   {
-    title: 'Public Snippets',
-    value: '0',
-    icon: Eye,
+    title: 'Flashcard Generator',
+    description: 'Create study decks from your notes automatically.',
+    href: '/flashcards',
+    icon: BrainCircuit,
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-50',
   },
   {
-    title: 'Saved Snippets',
-    value: '0',
-    icon: Bookmark,
+    title: 'Smart Study Plan',
+    description: 'Generate a personalized study schedule.',
+    href: '/study-plan',
+    icon: CalendarDays,
+    color: 'text-green-500',
+    bgColor: 'bg-green-50',
   },
   {
-    title: 'Total Stars',
-    value: '0',
-    icon: Star,
+    title: 'Focus Mode',
+    description: 'Start a distraction-free study session.',
+    href: '/focus-mode',
+    icon: Clock,
+    color: 'text-orange-500',
+    bgColor: 'bg-orange-50',
   },
 ];
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  
   return (
-    <div className="animate-in fade-in-50">
-      <div className="space-y-8">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <Card key={stat.title} className="shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
+    <div className="animate-in fade-in-50 space-y-12">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome back, {user?.displayName?.split(' ')[0] || 'Student'}!
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Ready to have a productive day? Let's get started.
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {features.map((feature) => (
+          <Link href={feature.href} key={feature.title}>
+            <Card className="shadow-sm hover:shadow-lg transition-shadow h-full flex flex-col">
+              <CardHeader>
+                <div className={`p-3 rounded-full w-min ${feature.bgColor}`}>
+                    <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
+              <CardContent className="flex-grow">
+                <CardTitle className="text-lg font-semibold">{feature.title}</CardTitle>
+                <CardDescription className="mt-1 text-sm">{feature.description}</CardDescription>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          </Link>
+        ))}
+      </div>
 
-        <div className="flex items-center gap-4">
-          <Button size="lg">
-            <Plus className="mr-2 h-4 w-4" /> Create Snippet
-          </Button>
-          <Button variant="outline" size="lg">
-            <Upload className="mr-2 h-4 w-4" /> Import Snippet
-          </Button>
-        </div>
-
-        <div className="pt-4">
-            <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-2xl font-bold tracking-tight">Your Snippets</h2>
-            </div>
-            <Card className="flex flex-col items-center justify-center min-h-[400px] border-dashed shadow-none">
-                <div className="text-center p-8 space-y-4">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                        <Plus className="h-6 w-6 text-muted-foreground" />
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+           <h2 className="text-2xl font-bold tracking-tight mb-4">Upcoming Tasks</h2>
+           <Card>
+                <CardContent className="p-6">
+                     <div className="text-center text-muted-foreground p-8">
+                        <CalendarDays className="h-12 w-12 mx-auto mb-4" />
+                        <h3 className="font-semibold text-lg">No upcoming tasks</h3>
+                        <p>Create a study plan to see your tasks here.</p>
+                        <Button variant="secondary" className="mt-4" asChild>
+                            <Link href="/study-plan">Create Plan</Link>
+                        </Button>
                     </div>
-                    <h3 className="text-xl font-semibold">No Snippets Yet</h3>
-                    <p className="text-muted-foreground">You haven't created any snippets. Get started by adding one!</p>
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Create Your First Snippet
-                    </Button>
-                </div>
+                </CardContent>
+           </Card>
+        </div>
+        <div>
+            <h2 className="text-2xl font-bold tracking-tight mb-4">Continue Studying</h2>
+            <Card>
+                 <CardContent className="p-6">
+                    <div className="text-center text-muted-foreground p-8">
+                        <Clock className="h-12 w-12 mx-auto mb-4" />
+                        <h3 className="font-semibold text-lg">No recent sessions</h3>
+                        <p>Start a focus session to track your progress.</p>
+                         <Button variant="secondary" className="mt-4" asChild>
+                            <Link href="/focus-mode">Start Focus Session</Link>
+                        </Button>
+                    </div>
+                </CardContent>
             </Card>
         </div>
-
       </div>
+
     </div>
   );
 }
