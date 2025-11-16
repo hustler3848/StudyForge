@@ -1,10 +1,28 @@
 "use client";
 
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
-import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 function GoogleIcon() {
@@ -30,36 +48,111 @@ function GoogleIcon() {
   );
 }
 
+const signUpSchema = z
+  .object({
+    email: z.string().email("Please enter a valid email address."),
+    password: z.string().min(8, "Password must be at least 8 characters long."),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+type SignUpFormValues = z.infer<typeof signUpSchema>;
+
 export default function SignUpPage() {
   const { signInWithGoogle, loading } = useAuth();
+  
+  const form = useForm<SignUpFormValues>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: { email: "", password: "", confirmPassword: "" },
+  });
+
+  // Since email/password auth is not implemented, this is a placeholder
+  function onSubmit(data: SignUpFormValues) {
+    console.log(data);
+    // In a real app, you'd handle email/password sign up here.
+  }
 
   return (
-    <div className="container mx-auto flex w-full flex-1 flex-col items-center justify-center gap-12 px-4 text-center">
-      <Link href="/" className="absolute top-8 left-8">
-        <Logo />
-      </Link>
-      <div className="flex flex-col items-center gap-4">
-        
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">
-          Unlock Your Academic Potential
-        </h1>
-        <p className="max-w-xl text-base text-foreground/80 md:text-lg">
-          Personalized study plans, instant essay feedback, and smart
-          flashcards. All powered by AI to help you learn smarter, not harder.
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+    <Card className="w-full max-w-sm">
+      <CardHeader className="text-center">
+        <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
+        <CardDescription>
+          Get started with your AI-powered study partner.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="name@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" className="w-full" disabled>
+              Create Account
+            </Button>
+          </form>
+        </Form>
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
         <Button
+          variant="outline"
+          className="w-full"
           onClick={signInWithGoogle}
           disabled={loading}
-          size="lg"
-          className={cn("w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white")}
         >
           <GoogleIcon />
-          Sign up with Google
+          Google
         </Button>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter className="justify-center text-sm">
+        <p>Already have an account? <Link href="/signin" className="font-medium text-primary hover:underline">Log in</Link></p>
+      </CardFooter>
+    </Card>
   );
 }
