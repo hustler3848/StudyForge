@@ -74,7 +74,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar>
+        <Sidebar collapsible="icon" variant="sidebar" side="left">
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -101,12 +101,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
-              <div className="flex items-center gap-4">
-                <h1 className="text-xl font-semibold">
-                  {navItems.find(item => pathname.startsWith(item.href))?.label || 'StudyWise'}
-                </h1>
-              </div>
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-6">
               <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon">
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
@@ -140,7 +135,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
               </div>
           </header>
-          <main className="py-6 lg:py-8 flex-1">{children}</main>
+          <main className="flex-1 p-6">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>
