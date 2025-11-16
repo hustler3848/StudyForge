@@ -69,8 +69,8 @@ export default function DashboardPage() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {features.map((feature) => (
-          <Link href={feature.href} key={feature.title} className="block hover:scale-[1.02] active:scale-[0.98] transition-transform duration-150 ease-in-out">
-            <Card className="hover:border-primary/50 h-full flex flex-col">
+          <Link href={feature.href} key={feature.title} className="block group">
+            <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-md">
               <CardHeader>
                 <div className={`p-3 rounded-full w-min ${feature.bgColor}`}>
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />

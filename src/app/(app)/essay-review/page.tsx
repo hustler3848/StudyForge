@@ -22,6 +22,12 @@ type EssayFormValues = z.infer<typeof essaySchema>;
 const ScoreCircle = ({ score, label }: { score: number; label: string }) => (
   <div className="relative h-24 w-24">
     <svg className="h-full w-full" viewBox="0 0 36 36">
+      <defs>
+        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="rgb(99 102 241)" />
+          <stop offset="100%" stopColor="rgb(96 165 250)" />
+        </linearGradient>
+      </defs>
       <path
         className="text-secondary"
         d="M18 2.0845
@@ -31,7 +37,7 @@ const ScoreCircle = ({ score, label }: { score: number; label: string }) => (
         strokeWidth="3"
       />
       <path
-        className="text-primary"
+        stroke="url(#gradient)"
         strokeDasharray={`${score}, 100`}
         d="M18 2.0845
           a 15.9155 15.9155 0 0 1 0 31.8305

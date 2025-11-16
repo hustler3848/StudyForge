@@ -35,7 +35,7 @@ export default function LoginPage() {
     <div className="container mx-auto flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="flex flex-col items-center gap-4 text-center">
         <Logo />
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
           Unlock Your Academic Potential
         </h1>
         <p className="max-w-3xl text-lg text-foreground/80">
@@ -48,7 +48,7 @@ export default function LoginPage() {
           onClick={signInWithGoogle}
           disabled={loading}
           size="lg"
-          className="w-full bg-white text-black hover:bg-gray-100 shadow-md"
+          className="w-full"
         >
           <GoogleIcon />
           Log in with Google
