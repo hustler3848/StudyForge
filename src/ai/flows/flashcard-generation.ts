@@ -72,7 +72,8 @@ ${JSON.stringify(GenerateFlashcardsOutputSchema.shape)}
     try {
       const parsed = JSON.parse(cleanedResponse || '{}');
       return GenerateFlashcardsOutputSchema.parse(parsed);
-    } catch (e)      console.error("Failed to parse AI response:", e);
+    } catch (e) {
+      console.error("Failed to parse AI response:", e);
       throw new Error("The AI returned an invalid response format.");
     }
   }
