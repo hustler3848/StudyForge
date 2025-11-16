@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 function GoogleIcon() {
   return (
@@ -33,9 +35,12 @@ export default function LoginPage() {
 
   return (
     <div className="container mx-auto flex w-full flex-1 flex-col items-center justify-center gap-12 px-4 text-center">
-      <div className="flex flex-col items-center gap-4">
+      <Link href="/" className="absolute top-8 left-8">
         <Logo />
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
+      </Link>
+      <div className="flex flex-col items-center gap-4">
+        
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">
           Unlock Your Academic Potential
         </h1>
         <p className="max-w-xl text-base text-foreground/80 md:text-lg">
@@ -49,7 +54,7 @@ export default function LoginPage() {
           onClick={signInWithGoogle}
           disabled={loading}
           size="lg"
-          className="w-full"
+          className={cn("w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white")}
         >
           <GoogleIcon />
           Log in with Google

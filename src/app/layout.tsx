@@ -3,26 +3,20 @@ import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Space_Grotesk, DM_Sans, Fira_Code } from 'next/font/google';
+import { Playfair_Display, PT_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/context/theme-provider';
 
-const spaceGrotesk = Space_Grotesk({
+const playfair = Playfair_Display({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-space-grotesk',
+  variable: '--font-headline',
 });
 
-const dmSans = DM_Sans({
+const ptSans = PT_Sans({
   subsets: ['latin'],
-  weight: ['400', '600'],
+  weight: ['400', '700'],
   display: 'swap',
-  variable: '--font-dm-sans',
-});
-
-const firaCode = Fira_Code({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-fira-code',
+  variable: '--font-body',
 });
 
 
@@ -41,9 +35,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          spaceGrotesk.variable,
-          dmSans.variable,
-          firaCode.variable,
+          playfair.variable,
+          ptSans.variable,
         )}
       >
         <ThemeProvider

@@ -74,8 +74,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
              <Logo />
+             <SidebarToggleButton />
           </SidebarHeader>
-          <SidebarToggleButton />
+          
           <SidebarContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -166,5 +167,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthGuard>
   );
 }
-
-    
