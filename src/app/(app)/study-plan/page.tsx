@@ -134,7 +134,7 @@ export default function StudyPlanPage() {
   const parsedWeeklyPlan = plan ? parseTimetable(plan.weeklyTimetable) : [];
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3 animate-in fade-in-50">
+    <div className="grid gap-6 lg:grid-cols-3 animate-in fade-in-50">
       <Card className="shadow-lg lg:col-span-1">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Create Your Study Plan</CardTitle>
@@ -282,7 +282,7 @@ export default function StudyPlanPage() {
                                     <h4 className="font-bold text-center mb-4">{day.day}</h4>
                                     <div className="space-y-2">
                                         {day.sessions.length > 0 ? day.sessions.map((session, index) => (
-                                            <div key={index} className={cn("p-2 rounded-md", getColorForSubject(session.subject))}>
+                                            <div key={index} className={cn("p-2 rounded-md break-words", getColorForSubject(session.subject))}>
                                                 <p className="font-bold text-sm">{session.time}</p>
                                                 <p className="font-semibold text-xs">{session.subject}</p>
                                                 <p className="text-xs opacity-80">{session.task}</p>
