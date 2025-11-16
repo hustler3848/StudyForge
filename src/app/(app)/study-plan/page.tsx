@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,25 +23,24 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Bot, Calendar, Plus, Trash2, Timer } from "lucide-react";
+import { Bot, Calendar, Plus, Trash2, GripVertical } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   generateStudyPlan,
   type GenerateStudyPlanOutput,
 } from "@/ai/flows/smart-study-plan";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { StudyPlan } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DndContext,
+  useDraggable,
+  useDroppable,
+  closestCenter,
+  type DragEndEvent,
+  DragOverlay,
+} from "@dnd-kit/core";
+import { cn } from "@/lib/utils";
 
 const studyPlanSchema = z.object({
   tasks: z
@@ -58,22 +57,16 @@ const studyPlanSchema = z.object({
 type StudyPlanFormValues = z.infer<typeof studyPlanSchema>;
 
 const subjectColors: { [key: string]: string } = {
-  default: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
-  math: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  science:
-    "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-  history:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  english:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300",
-  biology:
-    "bg-green-200 text-green-900 dark:bg-green-800/50 dark:text-green-200",
-  chemistry:
-    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300",
-  physics: "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300",
-  literature:
-    "bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300",
-  algebra: "bg-blue-200 text-blue-900 dark:bg-blue-800/50 dark:text-blue-200",
+  default: "bg-gray-500 text-gray-50",
+  math: "bg-blue-500 text-blue-50",
+  science: "bg-green-500 text-green-50",
+  history: "bg-yellow-500 text-yellow-50",
+  english: "bg-purple-500 text-purple-50",
+  biology: "bg-emerald-500 text-emerald-50",
+  chemistry: "bg-indigo-500 text-indigo-50",
+  physics: "bg-sky-500 text-sky-50",
+  literature: "bg-pink-500 text-pink-50",
+  algebra: "bg-cyan-500 text-cyan-50",
 };
 
 const getColorForSubject = (subject: string) => {
@@ -86,57 +79,79 @@ const getColorForSubject = (subject: string) => {
   return subjectColors.default;
 };
 
-type ParsedSession = {
-  time: string;
+type StudyBlock = {
+  id: string;
   subject: string;
-  task: string;
+  time: string; // e.g., "09:00"
+  duration: number; // in hours
 };
 
-type ParsedDay = {
-  day: string;
-  sessions: ParsedSession[];
-};
+const DraggableSubject = ({ subject }: { subject: string }) => {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: `subject-${subject}`,
+    data: { subject },
+  });
 
-const parseTimetable = (timetable: string): ParsedDay[] => {
-  if (!timetable) return [];
-  const days = timetable.split(
-    /(?=Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={cn(
+        "p-2 rounded-md flex items-center gap-2 cursor-grab touch-none",
+        getColorForSubject(subject)
+      )}
+    >
+      <GripVertical className="h-5 w-5" />
+      {subject}
+    </div>
   );
-  return days
-    .filter((day) => day.trim())
-    .map((dayString) => {
-      const lines = dayString.trim().split("\n");
-      const day = lines[0].replace(":", "").trim();
-      const sessions = lines
-        .slice(1)
-        .map((line) => {
-          const match = line.match(/-\s(.*?):\s(.*?)\s\((.*?)\)/);
-          if (match) {
-            return { time: match[1], subject: match[2], task: match[3] };
-          }
-          return null;
-        })
-        .filter((s): s is ParsedSession => s !== null);
-      return { day, sessions };
-    });
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+const DroppableHour = ({
+  time,
+  children,
+}: {
+  time: string;
+  children: React.ReactNode;
+}) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `hour-${time}`,
+    data: { time },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        "h-16 border-b relative",
+        isOver && "bg-primary/20"
+      )}
+    >
+      <span className="absolute top-1 left-1 text-xs text-muted-foreground">
+        {time}
+      </span>
+      {children}
+    </div>
+  );
 };
 
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
-
+const hours = Array.from({ length: 18 }, (_, i) => `${String(i + 6).padStart(2, "0")}:00`);
 
 export default function StudyPlanPage() {
-  const { user, updateUserProfile } = useAuth();
-  const [plan, setPlan] = useState<StudyPlan | null>(user?.studyPlan || null);
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [studyBlocks, setStudyBlocks] = useState<StudyBlock[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const subjects = user?.profile?.subjects || [];
 
   const form = useForm<StudyPlanFormValues>({
     resolver: zodResolver(studyPlanSchema),
@@ -147,29 +162,14 @@ export default function StudyPlanPage() {
     },
   });
 
-  const {
-    fields: taskFields,
-    append: appendTask,
-    remove: removeTask,
-  } = useFieldArray({
-    control: form.control,
-    name: "tasks",
-  });
-
-  const {
-    fields: freeHourFields,
-    append: appendFreeHour,
-    remove: removeFreeHour,
-  } = useFieldArray({
-    control: form.control,
-    name: "freeHours",
-  });
+  const { fields: taskFields, append: appendTask, remove: removeTask } = useFieldArray({ control: form.control, name: "tasks" });
+  const { fields: freeHourFields, append: appendFreeHour, remove: removeFreeHour } = useFieldArray({ control: form.control, name: "freeHours" });
 
   async function onSubmit(data: StudyPlanFormValues) {
     if (!user || !user.profile) return;
     setIsLoading(true);
-    setPlan(null);
     setError(null);
+    setStudyBlocks([]);
 
     const input = {
       profile: {
@@ -184,13 +184,18 @@ export default function StudyPlanPage() {
 
     try {
       const result = await generateStudyPlan(input);
-      const newPlan: StudyPlan = {
-        ...result,
-        id: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      };
-      setPlan(newPlan);
-      updateUserProfile({ studyPlan: newPlan });
+      const newBlocks: StudyBlock[] = result.dailySessions.map(
+        (session, index) => ({
+          id: `ai-block-${index}`,
+          subject: session.subject,
+          time: "09:00", // Default time, AI doesn't provide this yet
+          duration: 1,
+        })
+      );
+      // For now, we are not placing AI suggestions on calendar.
+      // This could be a future improvement.
+      // setStudyBlocks(newBlocks);
+      alert("AI plan generated! You can now drag subjects to the calendar.");
     } catch (error) {
       console.error("Error generating study plan:", error);
       setError("Sorry, the AI failed to generate a study plan. Please try again.");
@@ -199,298 +204,165 @@ export default function StudyPlanPage() {
     }
   }
 
-  const parsedWeeklyPlan = plan ? parseTimetable(plan.weeklyTimetable) : [];
+  function handleDragEnd(event: DragEndEvent) {
+    const { over, active } = event;
+    setActiveId(null);
+    if (over && active.data.current?.subject) {
+      const subject = active.data.current.subject;
+      const time = over.data.current?.time;
+      
+      const newBlock: StudyBlock = {
+        id: `${subject}-${time}-${Date.now()}`,
+        subject,
+        time,
+        duration: 1,
+      };
+
+      // Avoid duplicates for the same hour
+      setStudyBlocks((blocks) => {
+        const existingBlock = blocks.find(b => b.time === time);
+        if (existingBlock) return blocks;
+        return [...blocks, newBlock];
+      });
+    }
+  }
+  
+  const activeSubject = activeId?.startsWith("subject-") 
+    ? activeId.replace("subject-", "")
+    : null;
 
   return (
-    <motion.div 
-      className="grid gap-6 lg:grid-cols-3"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
+    <DndContext
+      collisionDetection={closestCenter}
+      onDragStart={(e) => setActiveId(e.active.id as string)}
+      onDragEnd={handleDragEnd}
     >
-      <motion.div className="lg:col-span-1" variants={itemVariants}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-xl md:text-2xl">
-              Create Your Study Plan
-            </CardTitle>
-            <CardDescription>
-              Tell the AI about your goals and schedule.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div>
-                  <FormLabel className="text-sm font-medium">
-                    Upcoming Tests & Assignments
-                  </FormLabel>
-                  <div className="space-y-2 mt-2">
-                    {taskFields.map((field, index) => (
-                      <FormField
-                        key={field.id}
-                        control={form.control}
-                        name={`tasks.${index}.value`}
-                        render={({ field }) => (
-                          <FormItem className="flex items-center gap-2">
-                            <FormControl>
-                              <Input
-                                placeholder={`e.g., Math test on Friday`}
-                                {...field}
-                              />
-                            </FormControl>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeTask(index)}
-                              disabled={taskFields.length <= 1}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </FormItem>
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => appendTask({ value: "" })}
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> Add Task
-                  </Button>
-                  <FormMessage className="mt-1">
-                    {form.formState.errors.tasks?.message}
-                  </FormMessage>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-xl md:text-2xl">
+                Create Your Study Plan
+              </CardTitle>
+              <CardDescription>
+                Drag subjects to the timeline or use the AI generator.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <FormLabel>Subjects</FormLabel>
+                <div className="p-4 bg-secondary/50 rounded-lg space-y-2">
+                    {subjects.length > 0 ? (
+                        subjects.map(subject => (
+                            <DraggableSubject key={subject} subject={subject} />
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Add subjects in your profile to start planning.</p>
+                    )}
                 </div>
-
-                <div>
-                  <FormLabel className="text-sm font-medium">
-                    Free Time Slots
-                  </FormLabel>
-                  <div className="space-y-2 mt-2">
-                    {freeHourFields.map((field, index) => (
-                      <FormField
-                        key={field.id}
-                        control={form.control}
-                        name={`freeHours.${index}.value`}
-                        render={({ field }) => (
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-lg">
+                Or Use The AI Generator
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div>
+                    <FormLabel className="text-sm font-medium">Upcoming Tests & Assignments</FormLabel>
+                    <div className="space-y-2 mt-2">
+                      {taskFields.map((field, index) => (
+                        <FormField key={field.id} control={form.control} name={`tasks.${index}.value`} render={({ field }) => (
                           <FormItem className="flex items-center gap-2">
-                            <FormControl>
-                              <Input
-                                placeholder={`e.g., Monday 4-6 PM`}
-                                {...field}
-                              />
-                            </FormControl>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeFreeHour(index)}
-                              disabled={freeHourFields.length <= 1}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <FormControl><Input placeholder={`e.g., Math test on Friday`} {...field} /></FormControl>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeTask(index)} disabled={taskFields.length <= 1}><Trash2 className="h-4 w-4" /></Button>
                           </FormItem>
-                        )}
-                      />
-                    ))}
+                        )} />
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendTask({ value: "" })}><Plus className="mr-2 h-4 w-4" /> Add Task</Button>
+                    <FormMessage className="mt-1">{form.formState.errors.tasks?.message}</FormMessage>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => appendFreeHour({ value: "" })}
-                  >
-                    <Plus className="mr-2 h-4 w-4" /> Add Slot
-                  </Button>
-                  <FormMessage className="mt-1">
-                    {form.formState.errors.freeHours?.message}
-                  </FormMessage>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="studyGoals"
-                  render={({ field }) => (
+                  <div>
+                    <FormLabel className="text-sm font-medium">Free Time Slots</FormLabel>
+                    <div className="space-y-2 mt-2">
+                      {freeHourFields.map((field, index) => (
+                        <FormField key={field.id} control={form.control} name={`freeHours.${index}.value`} render={({ field }) => (
+                          <FormItem className="flex items-center gap-2">
+                            <FormControl><Input placeholder={`e.g., Monday 4-6 PM`} {...field} /></FormControl>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeFreeHour(index)} disabled={freeHourFields.length <= 1}><Trash2 className="h-4 w-4" /></Button>
+                          </FormItem>
+                        )} />
+                      ))}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendFreeHour({ value: "" })}><Plus className="mr-2 h-4 w-4" /> Add Slot</Button>
+                    <FormMessage className="mt-1">{form.formState.errors.freeHours?.message}</FormMessage>
+                  </div>
+                  <FormField control={form.control} name="studyGoals" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Study Goals</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="e.g., Ace my history midterm, improve my essay writing skills..."
-                          {...field}
-                        />
-                      </FormControl>
+                      <FormControl><Textarea placeholder="e.g., Ace my history midterm, improve my essay writing skills..." {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
+                  )} />
+                  <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? "Generating..." : "Get AI Suggestions"}</Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Generating Plan..." : "Generate My Plan"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      <div className="space-y-6 lg:col-span-2">
-        <AnimatePresence>
-          {isLoading && (
-            <motion.div
-              key="loader"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Card className="flex items-center justify-center min-h-[500px]">
-                <div className="text-center space-y-4 text-muted-foreground">
-                  <Bot className="h-12 w-12 mx-auto animate-spin text-primary" />
-                  <p className="font-semibold">
-                    AI is crafting your personalized study plan...
-                  </p>
-                  <p className="text-sm">This might take a moment.</p>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-
-          {error && (
-            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-headline text-xl md:text-2xl">Today's Plan</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[calc(18*4rem)] overflow-y-auto pr-2">
+                {hours.map((hour) => (
+                  <DroppableHour key={hour} time={hour}>
+                      {studyBlocks
+                        .filter((block) => block.time === hour)
+                        .map((block) => (
+                           <motion.div
+                            key={block.id}
+                            layoutId={block.id}
+                            className={cn("absolute inset-x-0 mx-10 top-0 bottom-0 p-2 rounded-lg text-sm flex items-center z-10", getColorForSubject(block.subject))}
+                            style={{ height: `${block.duration * 4 - 0.25}rem` }}
+                           >
+                            {block.subject}
+                            <button onClick={() => setStudyBlocks(bs => bs.filter(b => b.id !== block.id))} className="ml-auto p-1 rounded-full hover:bg-white/20">
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                           </motion.div>
+                        ))}
+                  </DroppableHour>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+           {error && (
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             </motion.div>
           )}
-
-          {plan && (
-            <motion.div
-              key="plan"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline text-xl md:text-2xl">
-                    Your Smart Study Plan
-                  </CardTitle>
-                  <CardDescription>
-                    A tailored plan to help you achieve your goals.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <motion.div variants={itemVariants}>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Timer /> Daily Session Priorities
-                    </h3>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Subject</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Time</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {plan.dailySessions.map((session, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">
-                                {session.subject}
-                              </TableCell>
-                              <TableCell>
-                                <span
-                                  className={cn(
-                                    "px-2 py-1 text-xs font-semibold rounded-full",
-                                    {
-                                      "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300":
-                                        session.priority.toLowerCase() === "high",
-                                      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300":
-                                        session.priority.toLowerCase() === "medium",
-                                      "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300":
-                                        session.priority.toLowerCase() === "low",
-                                    }
-                                  )}
-                                >
-                                  {session.priority}
-                                </span>
-                              </TableCell>
-                              <TableCell>{session.estimatedTime}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </motion.div>
-                  <Separator />
-                  <motion.div variants={itemVariants}>
-                    <h3 className="font-semibold mb-4 flex items-center gap-2">
-                      <Calendar /> Weekly Timetable
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {parsedWeeklyPlan.map((day) => (
-                        <div
-                          key={day.day}
-                          className="bg-secondary/50 rounded-lg p-3"
-                        >
-                          <h4 className="font-bold text-center mb-4">{day.day}</h4>
-                          <div className="space-y-2">
-                            {day.sessions.length > 0 ? (
-                              day.sessions.map((session, index) => (
-                                <div
-                                  key={index}
-                                  className={cn(
-                                    "p-2 rounded-md break-words text-xs",
-                                    getColorForSubject(session.subject)
-                                  )}
-                                >
-                                  <p className="font-bold">{session.time}</p>
-                                  <p className="font-semibold">
-                                    {session.subject}
-                                  </p>
-                                  <p className="opacity-80">{session.task}</p>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="text-center text-xs text-muted-foreground p-4">
-                                <p>Free Day!</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      {parsedWeeklyPlan.length === 0 && (
-                        <p className="text-muted-foreground text-sm p-4 col-span-full text-center">Timetable could not be generated from the provided input.</p>
-                      )}
-                    </div>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          {!isLoading && !plan && !error && (
-            <motion.div key="placeholder" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Card className="flex items-center justify-center min-h-[500px]">
-                <div className="text-center text-muted-foreground p-8">
-                  <Calendar className="h-12 w-12 mx-auto mb-4" />
-                  <h3 className="font-semibold text-lg">
-                    Your study plan will appear here.
-                  </h3>
-                  <p className="text-sm sm:text-base">Fill out the form to generate your schedule.</p>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
       </div>
-    </motion.div>
+      <DragOverlay>
+        {activeSubject ? (
+          <div className={cn("p-2 rounded-md flex items-center gap-2", getColorForSubject(activeSubject))}>
+             <GripVertical className="h-5 w-5" />
+             {activeSubject}
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
