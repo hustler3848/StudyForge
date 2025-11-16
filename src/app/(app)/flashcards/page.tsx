@@ -93,9 +93,7 @@ export default function FlashcardsPage() {
         const base64 = await fileToBase64(data.pdfFile);
         const result = await generateFlashcards({ pdfData: base64 });
         setGeneratedDeck(result);
-        if (result && result.flashcards) {
-          localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
-        }
+        localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
         setIsLoading(false);
         return;
       }
@@ -111,9 +109,7 @@ export default function FlashcardsPage() {
           // 2️⃣ Send URL to your AI flow
           const result = await generateFlashcards({ imageData: imageUrl });
           setGeneratedDeck(result);
-          if (result && result.flashcards) {
-            localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
-          }
+          localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
         } catch (err) {
           console.error(err);
           setError("Failed to upload or process the image. Make sure it's clear and readable.");
@@ -129,9 +125,7 @@ export default function FlashcardsPage() {
       if (data.notes) {
         const result = await generateFlashcards({ text: data.notes });
         setGeneratedDeck(result);
-        if (result && result.flashcards) {
-            localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
-        }
+        localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
       }
 
     } catch (err) {
