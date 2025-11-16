@@ -12,6 +12,7 @@ import {
   SidebarFooter,
   SidebarInset,
   SidebarTrigger,
+  SidebarSeparator
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -23,7 +24,8 @@ import {
   CalendarDays,
   Sun,
   Moon,
-  ChevronLeft
+  ChevronLeft,
+  Settings
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -107,7 +109,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarToggleButton />
           </SidebarContent>
           <SidebarFooter>
-             {/* Footer content can go here if needed */}
+            <SidebarSeparator />
+             <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Settings">
+                        <Link href="#">
+                            <Settings />
+                            <span>Settings</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>

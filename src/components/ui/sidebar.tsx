@@ -216,7 +216,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-          "peer hidden md:flex flex-col text-sidebar-foreground transition-all duration-300 ease-in-out",
+           "peer hidden md:flex sticky top-0 h-screen flex-col text-sidebar-foreground transition-all duration-300 ease-in-out",
            state === 'expanded' ? 'w-[--sidebar-width]' : 'w-[--sidebar-width-icon]',
            side === 'left' ? 'border-r' : 'border-l',
            variant === 'floating' && 'm-2 rounded-lg border shadow',
@@ -300,11 +300,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background transition-all duration-300 ease-in-out",
-        "peer-data-[side=left]:md:pl-[var(--sidebar-width-icon)]",
-        "peer-data-[side=left][data-state=expanded]:md:pl-[var(--sidebar-width)]",
-        "peer-data-[side=right]:md:pr-[var(--sidebar-width-icon)]",
-        "peer-data-[side=right][data-state=expanded]:md:pr-[var(--sidebar-width)]",
+        "relative flex min-h-svh w-full flex-1 flex-col bg-background transition-all duration-300 ease-in-out",
         className
       )}
       {...props}
