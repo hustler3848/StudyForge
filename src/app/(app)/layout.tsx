@@ -18,16 +18,16 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Home,
   LogOut,
-  FileText,
-  Book,
-  Clock,
-  CalendarDays,
   Sun,
   Moon,
   Settings,
   Sparkles,
+  LayoutDashboard,
+  CalendarCheck,
+  FileSignature,
+  Layers,
+  Hourglass,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -46,11 +46,11 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/study-plan', label: 'My Plan', icon: CalendarDays },
-  { href: '/essay-review', label: 'Essay Review', icon: FileText },
-  { href: '/flashcards', label: 'Flashcards', icon: Book },
-  { href: '/focus-mode', label: 'Focus Mode', icon: Clock },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
+  { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
+  { href: '/flashcards', label: 'Flashcards', icon: Layers },
+  { href: '/focus-mode', label: 'Focus Mode', icon: Hourglass },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -74,8 +74,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar collapsible="icon" variant="sidebar" side="left">
           <SidebarHeader>
              <Logo />
+             <SidebarToggleButton />
           </SidebarHeader>
-          <SidebarToggleButton />
+          
           <SidebarContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -106,6 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
+            <SidebarToggleButton />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
