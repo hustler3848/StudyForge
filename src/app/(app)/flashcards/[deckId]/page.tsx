@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -82,7 +83,7 @@ export default function FlashcardPracticePage() {
   }
 
   if (isLoading || deck.length === 0) {
-    return <div className="text-center p-10">Loading deck...</div>;
+    return <div className="text-center p-10 animate-in fade-in-50">Loading deck...</div>;
   }
 
   if (isSessionComplete) {
@@ -148,3 +149,5 @@ export default function FlashcardPracticePage() {
     </div>
   );
 }
+
+    

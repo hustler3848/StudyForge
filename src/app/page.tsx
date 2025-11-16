@@ -56,7 +56,7 @@ const Header = () => {
 const HeroSection = () => (
   <section className="py-20 md:py-32">
     <div className="container grid md:grid-cols-2 gap-12 items-center">
-      <div className="flex flex-col gap-6 text-center md:text-left items-center md:items-start">
+      <div className="flex flex-col gap-6 text-center md:text-left items-center md:items-start animate-in fade-in-50">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter font-headline">
           <span className="bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">Learn Smarter.</span>
           <br />
@@ -69,7 +69,7 @@ const HeroSection = () => (
           <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Start Free - No signup needed</Link>
         </div>
       </div>
-      <div className="relative w-full max-w-2xl mx-auto overflow-hidden">
+      <div className="relative w-full max-w-2xl mx-auto overflow-hidden animate-in fade-in-50">
          <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
          <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
@@ -88,7 +88,7 @@ const HeroSection = () => (
 );
 
 const TrustedSection = () => (
-    <section className="py-8 bg-secondary/50">
+    <section className="py-8 bg-secondary/50 animate-in fade-in-50">
         <div className="container text-center">
             <p className="text-sm uppercase text-muted-foreground font-semibold tracking-wider">
                 Used by students preparing for
@@ -132,7 +132,7 @@ const features = [
 ];
 
 const FeatureShowcaseSection = () => (
-    <section id="features" className="py-20 md:py-28">
+    <section id="features" className="py-20 md:py-28 animate-in fade-in-50">
         <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-12">
                 <h2 className="text-4xl font-extrabold font-headline">A Smarter Way to Study</h2>
@@ -158,7 +158,7 @@ const FeatureShowcaseSection = () => (
 );
 
 const HowItWorksSection = () => (
-  <section id="how-it-works" className="py-20 md:py-28 bg-secondary/30">
+  <section id="how-it-works" className="py-20 md:py-28 bg-secondary/30 animate-in fade-in-50">
     <div className="container">
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h2 className="text-4xl font-extrabold font-headline">Three Steps to Success</h2>
@@ -196,7 +196,7 @@ const HowItWorksSection = () => (
 
 
 const PricingSection = () => (
-    <section id="pricing" className="py-20 md:py-28">
+    <section id="pricing" className="py-20 md:py-28 animate-in fade-in-50">
         <div className="container">
             <div className="text-center max-w-3xl mx-auto mb-12">
                 <h2 className="text-4xl font-extrabold font-headline">Get Started for Free</h2>
@@ -226,7 +226,7 @@ const PricingSection = () => (
 );
 
 const Footer = () => (
-    <footer className="py-8 border-t">
+    <footer className="py-8 border-t animate-in fade-in-50">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
                 <Logo />
@@ -255,3 +255,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
