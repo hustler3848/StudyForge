@@ -103,7 +103,7 @@ export default function DashboardPage() {
   return (
     <div className="animate-in fade-in-50 space-y-8">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
           Welcome back, {user?.displayName?.split(" ")[0] || "Student"}!
         </h1>
         <p className="text-muted-foreground mt-2">
