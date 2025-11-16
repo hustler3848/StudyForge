@@ -59,7 +59,7 @@ function SidebarToggleButton() {
         variant="ghost"
         size="icon"
         className={cn(
-            "rounded-full h-8 w-8 bg-background absolute -right-4 top-1/2 -translate-y-1/2 z-10 border transition-all",
+            "rounded-full h-8 w-8 bg-background absolute -right-4 top-1/2 -translate-y-1/2 z-50 border transition-all",
             "group-data-[collapsible=icon]:rotate-180"
         )}
         onClick={toggleSidebar}
