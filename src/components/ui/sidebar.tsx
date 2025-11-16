@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { ChevronLeft, PanelLeft } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -142,7 +142,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full",
+              "group/sidebar-wrapper relative flex min-h-svh w-full",
               className
             )}
             ref={ref}
@@ -217,7 +217,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40",
+           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40 border-r",
            "group-data-[state=expanded]/sidebar-wrapper:w-[--sidebar-width]",
            "group-data-[state=collapsed]/sidebar-wrapper:w-[--sidebar-width-icon]",
            variant === 'floating' && 'm-2 rounded-lg border shadow',
@@ -229,17 +229,43 @@ const Sidebar = React.forwardRef<
         data-collapsible={collapsible}
         data-variant={variant}
         data-side={side}
-        onClick={state === 'collapsed' ? toggleSidebar : undefined}
+        onClick={toggleSidebar}
         {...props}
       >
-        <div className="relative h-full w-full flex flex-col" onClick={(e) => e.stopPropagation()}>
-            {children}
-        </div>
+        <div className="relative h-full w-full flex flex-col" onClick={(e) => e.stopPropagation()}>{children}</div>
       </aside>
     )
   }
 )
 Sidebar.displayName = "Sidebar"
+
+
+const SidebarToggleButton = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button">
+>(({ className, ...props }, ref) => {
+  const { toggleSidebar, state } = useSidebar()
+  return (
+    <Button
+      ref={ref}
+      variant="ghost"
+      size="icon"
+      className={cn(
+        "absolute top-1/2 -translate-y-1/2 rounded-full h-8 w-8 bg-background border shadow-md hover:bg-accent z-50",
+        "group-data-[side=left]/sidebar-wrapper:-right-4",
+        "group-data-[side=right]/sidebar-wrapper:-left-4",
+        "group-data-[state=expanded]/sidebar-wrapper:rotate-180",
+         "hidden md:inline-flex"
+      )}
+      onClick={toggleSidebar}
+      {...props}
+    >
+      <ChevronLeft className="h-4 w-4" />
+    </Button>
+  )
+})
+SidebarToggleButton.displayName = "SidebarToggleButton"
+
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
@@ -495,7 +521,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all duration-150 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-3 transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0 [&>svg]:size-5 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all duration-150 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-3",
   {
     variants: {
       variant: {
@@ -741,6 +767,7 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
+  SidebarToggleButton,
   SidebarTrigger,
   useSidebar,
 }

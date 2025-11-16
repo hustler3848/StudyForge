@@ -43,6 +43,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -56,6 +57,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { setTheme, theme } = useTheme();
+  const router = useRouter();
   
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -164,5 +166,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthGuard>
   );
 }
-
-    
