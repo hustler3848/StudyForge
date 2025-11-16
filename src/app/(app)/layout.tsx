@@ -87,6 +87,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthGuard>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar" side="left">
+          <SidebarToggleButton />
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -122,7 +123,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarToggleButton />
         <SidebarInset>
           <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
               <SidebarTrigger className="md:hidden"/>
