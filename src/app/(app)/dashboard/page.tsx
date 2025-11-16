@@ -82,7 +82,7 @@ function MotivationalQuote() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Lightbulb className="text-yellow-400" />
-          <span>Quote of the Day</span>
+          <span>Stay Motivated</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -137,10 +137,12 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4">
-            Upcoming Tasks
-          </h2>
           <Card>
+            <CardHeader>
+              <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+                Upcoming Tasks
+              </CardTitle>
+            </CardHeader>
             {upcomingTasks.length > 0 ? (
               <CardContent className="p-0">
                 <Table>
@@ -195,15 +197,13 @@ export default function DashboardPage() {
           </Card>
         </div>
         <div className="space-y-6">
-           <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-            Stay Motivated
-          </h2>
           <MotivationalQuote />
-
-           <h2 className="text-xl md:text-2xl font-bold tracking-tight pt-2">
-            Continue Studying
-          </h2>
           <Card>
+             <CardHeader>
+              <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+                Continue Studying
+              </CardTitle>
+            </CardHeader>
             <CardContent className="p-4 sm:p-6">
               <div className="text-center text-muted-foreground p-4 sm:p-8">
                 <Clock className="h-12 w-12 mx-auto mb-4" />
@@ -222,5 +222,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
