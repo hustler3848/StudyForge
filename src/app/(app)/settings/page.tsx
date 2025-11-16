@@ -45,6 +45,7 @@ const itemVariants = {
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const studyStreak = user?.studyStreak || 0;
   
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -119,8 +120,8 @@ export default function SettingsPage() {
                     <CardTitle>Achievements</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {user?.studyStreak && user.studyStreak > 0 ? (
-                        <StudyStreak streak={user.studyStreak} />
+                    {studyStreak > 0 ? (
+                        <StudyStreak streak={studyStreak} />
                     ) : (
                         <div className="text-center text-muted-foreground p-8">
                             <Trophy className="h-10 w-10 mx-auto mb-2" />

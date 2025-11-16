@@ -26,6 +26,7 @@ import {
   Clock,
   Lightbulb,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -115,9 +116,45 @@ function MotivationalQuote() {
   );
 }
 
+function StudyStreakCard({ streak }: { streak: number }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+          Study Streak
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-4 sm:p-6">
+        {streak > 0 ? (
+          <div className="text-center">
+            <Trophy className="h-16 w-16 mx-auto text-yellow-400 mb-2" />
+            <p className="text-5xl font-bold">{streak}</p>
+            <p className="text-muted-foreground">
+              {streak > 1 ? "Day" : "Days"} Streak!
+            </p>
+            <p className="text-sm mt-2">Keep up the great work!</p>
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground p-4 sm:p-8">
+            <Clock className="h-12 w-12 mx-auto mb-4" />
+            <h3 className="font-semibold text-lg">No recent sessions</h3>
+            <p className="text-sm sm:text-base">
+              Start a focus session to track your progress and build a streak.
+            </p>
+            <Button variant="secondary" className="mt-4" asChild>
+              <Link href="/focus-mode">Start Focus Session</Link>
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const upcomingTasks = user?.studyPlan?.dailySessions || [];
+  const studyStreak = user?.studyStreak || 0;
 
   return (
     <motion.div
@@ -230,25 +267,7 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div className="space-y-6" variants={itemVariants}>
           <MotivationalQuote />
-          <Card>
-             <CardHeader>
-              <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
-                Continue Studying
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="text-center text-muted-foreground p-4 sm:p-8">
-                <Clock className="h-12 w-12 mx-auto mb-4" />
-                <h3 className="font-semibold text-lg">No recent sessions</h3>
-                <p className="text-sm sm:text-base">
-                  Start a focus session to track your progress.
-                </p>
-                <Button variant="secondary" className="mt-4" asChild>
-                  <Link href="/focus-mode">Start Focus Session</Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <StudyStreakCard streak={studyStreak} />
         </motion.div>
       </motion.div>
     </motion.div>

@@ -139,7 +139,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </p>
                       </div>
                     </DropdownMenuLabel>
-                     {user?.studyStreak && user.studyStreak > 0 && (
+                    {user?.studyStreak && user.studyStreak > 0 && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem disabled>
