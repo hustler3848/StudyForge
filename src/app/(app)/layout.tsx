@@ -110,7 +110,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
-              <SidebarTrigger className="md:hidden"/>
+              <div className="flex items-center gap-4">
+                 <SidebarTrigger className="md:hidden"/>
+                 <h1 className="text-xl font-semibold hidden md:block">Dashboard</h1>
+              </div>
               <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>

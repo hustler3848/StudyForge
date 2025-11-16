@@ -31,18 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (docSnap.exists()) {
           const appUser = docSnap.data() as AppUser;
           setUser(appUser);
-          if (!appUser.profileComplete) {
-            if (window.location.pathname !== '/onboarding') {
-              router.push('/onboarding');
-            }
-          } else if (['/onboarding', '/signin', '/signup', '/login'].includes(window.location.pathname)) {
+           if (['/onboarding', '/signin', '/signup', '/login'].includes(window.location.pathname)) {
             router.push('/dashboard');
           }
         } else {
            const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
            await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
            setUser(newAppUser);
-           router.push('/onboarding');
+           router.push('/dashboard');
         }
       } else {
         setUser(null);
@@ -59,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: firebaseUser.email,
     displayName: firebaseUser.displayName,
     photoURL: firebaseUser.photoURL,
-    profileComplete: false,
+    profileComplete: true, // Set to true to bypass onboarding
   });
   
   const signInWithGoogle = async () => {
@@ -75,16 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
         await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
         setUser(newAppUser);
-        router.push('/onboarding');
       } else {
         const appUser = docSnap.data() as AppUser;
         setUser(appUser);
-         if (!appUser.profileComplete) {
-          router.push('/onboarding');
-        } else {
-          router.push('/dashboard');
-        }
       }
+       router.push('/dashboard');
     } catch (error) {
       console.error("Error during sign-in:", error);
       setUser(null);
