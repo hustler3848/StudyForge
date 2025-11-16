@@ -39,6 +39,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -54,7 +55,10 @@ function SidebarToggleButton() {
       <Button
         variant="ghost"
         size="icon"
-        className="rounded-full h-8 w-8 bg-background group-data-[collapsible=icon]:rotate-180"
+        className={cn(
+            "rounded-full h-8 w-8 bg-background absolute -right-4 top-1/2 -translate-y-1/2 z-10 border transition-all",
+            "group-data-[collapsible=icon]:rotate-180"
+        )}
         onClick={toggleSidebar}
       >
         <ChevronLeft className="h-4 w-4" />
@@ -100,15 +104,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+            <SidebarToggleButton />
           </SidebarContent>
-          <SidebarFooter className="flex-row justify-end p-4">
-             <SidebarToggleButton />
+          <SidebarFooter>
+             {/* Footer content can go here if needed */}
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6">
               <SidebarTrigger className="md:hidden"/>
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"/>
