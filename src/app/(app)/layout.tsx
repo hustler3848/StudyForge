@@ -24,6 +24,7 @@ import {
   CalendarDays,
   Sun,
   Moon,
+  ChevronLeft
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -37,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -46,10 +48,23 @@ const navItems = [
   { href: '/focus-mode', label: 'Focus Mode', icon: Clock },
 ];
 
+function SidebarToggleButton() {
+    const { toggleSidebar, state } = useSidebar();
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-full h-8 w-8 bg-background group-data-[collapsible=icon]:rotate-180"
+        onClick={toggleSidebar}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+    );
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const router = useRouter();
   
   const getInitials = (name: string | null) => {
     if (!name) return 'U';
@@ -67,35 +82,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                    <SidebarMenuButton
+                        asChild
+                        isActive={pathname.startsWith(item.href)}
+                        tooltip={item.label}
+                    >
+                        <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                        </Link>
+                    </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter>
-             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Settings">
-                        <Settings/>
-                        <span>Settings</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-             </SidebarMenu>
+          <SidebarFooter className="flex-row justify-end p-4">
+             <SidebarToggleButton />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="md:hidden" />
                 <h1 className="text-xl font-semibold">
                   {navItems.find(item => pathname.startsWith(item.href))?.label || 'StudyWise'}
                 </h1>
