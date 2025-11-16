@@ -58,50 +58,64 @@ const Header = () => {
         animate="visible"
         variants={sectionVariants}
       >
-        <motion.div className="flex items-center gap-6" variants={itemVariants}>
-          <Logo />
+        <div className="flex items-center gap-6 mr-auto">
+          <motion.div variants={itemVariants}>
+            <Logo />
+          </motion.div>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link
-              href="#features"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
-            >
-              Features
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
-            >
-              How it works
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-foreground/60 transition-colors hover:text-foreground/80"
-            >
-              Pricing
-            </Link>
+            <motion.div variants={itemVariants}>
+              <Link
+                href="#features"
+                className="text-foreground/60 transition-colors hover:text-foreground/80"
+              >
+                Features
+              </Link>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Link
+                href="#how-it-works"
+                className="text-foreground/60 transition-colors hover:text-foreground/80"
+              >
+                How it works
+              </Link>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Link
+                href="#pricing"
+                className="text-foreground/60 transition-colors hover:text-foreground/80"
+              >
+                Pricing
+              </Link>
+            </motion.div>
           </nav>
-        </motion.div>
-        <motion.div className="flex flex-1 items-center justify-end space-x-2" variants={itemVariants}>
-          <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-          <Link
-            href="/signin"
-            className={cn(buttonVariants({ variant: 'ghost' }))}
-          >
-            Login
-          </Link>
-          <Link
-            href="/signup"
-            className={cn(
-              buttonVariants({ variant: 'default' }),
-              'bg-gradient-to-r from-blue-500 to-sky-400 text-white'
-            )}
-          >
-            Get Started
-          </Link>
+        </div>
+        <motion.div className="flex flex-1 items-center justify-end space-x-2" variants={sectionVariants}>
+          <motion.div variants={itemVariants}>
+            <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Link
+              href="/signin"
+              className={cn(buttonVariants({ variant: 'ghost' }))}
+            >
+              Login
+            </Link>
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Link
+              href="/signup"
+              className={cn(
+                buttonVariants({ variant: 'default' }),
+                'bg-gradient-to-r from-blue-500 to-sky-400 text-white'
+              )}
+            >
+              Get Started
+            </Link>
+          </motion.div>
         </motion.div>
       </motion.div>
     </header>
@@ -146,18 +160,12 @@ const HeroSection = () => (
         variants={sectionVariants}
         className="relative w-full max-w-2xl mx-auto"
       >
-         <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
-          <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
-          <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
-          <Image
-            src="https://images.unsplash.com/photo-1533983333333-d8745b1a42f3?q=80&w=1200&h=800"
-            alt="StudyWise AI Dashboard Mockup"
-            width={1200}
-            height={800}
-            className="w-full relative rounded-2xl"
-            data-ai-hint="train station sunset"
-            priority
-          />
+         <div className="relative h-96 w-full flex items-center justify-center overflow-hidden rounded-2xl border bg-background/50 p-8 shadow-lg shadow-sky-200/50 dark:shadow-sky-900/50">
+            <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-200/50 dark:bg-blue-500/10 rounded-full filter blur-3xl opacity-80 animate-blob"></div>
+            <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-sky-200/50 dark:bg-sky-500/10 rounded-full filter blur-3xl opacity-80 animate-blob animation-delay-2000"></div>
+            <span className="text-muted-foreground/80">
+                StudyWise AI Dashboard Mockup
+            </span>
         </div>
       </motion.div>
     </div>
