@@ -28,7 +28,19 @@ import { motion } from 'framer-motion';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.2
+    }
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
 const Header = () => {
@@ -40,8 +52,13 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm">
-      <div className="container flex h-16 max-w-7xl items-center">
-        <div className="flex items-center gap-6">
+      <motion.div 
+        className="container flex h-16 max-w-7xl items-center"
+        initial="hidden"
+        animate="visible"
+        variants={sectionVariants}
+      >
+        <motion.div className="flex items-center gap-6" variants={itemVariants}>
           <Logo />
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link
@@ -63,8 +80,8 @@ const Header = () => {
               Pricing
             </Link>
           </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        </motion.div>
+        <motion.div className="flex flex-1 items-center justify-end space-x-2" variants={itemVariants}>
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
@@ -85,8 +102,8 @@ const Header = () => {
           >
             Get Started
           </Link>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </header>
   );
 };
@@ -97,22 +114,21 @@ const HeroSection = () => (
       <motion.div
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.5 }}
         variants={sectionVariants}
         className="flex flex-col gap-6 text-center md:text-left items-center md:items-start"
       >
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter font-headline">
+        <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter font-headline">
           <span className="bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">
             Learn Smarter.
           </span>
           <br />
           Study Faster.
-        </h1>
-        <p className="max-w-xl text-lg text-muted-foreground">
+        </motion.h1>
+        <motion.p variants={itemVariants} className="max-w-xl text-lg text-muted-foreground">
           Your personal AI tutor that creates adaptive study plans, generates
           flashcards, analyzes essays, and tracks your progress — automatically.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
+        </motion.p>
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
           <Link
             href="/signup"
             className={cn(
@@ -122,24 +138,23 @@ const HeroSection = () => (
           >
             Start Free - No signup needed
           </Link>
-        </div>
+        </motion.div>
       </motion.div>
       <motion.div
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.5, delay: 0.2 }}
         variants={sectionVariants}
-        className="relative w-full max-w-2xl mx-auto overflow-hidden"
+        className="relative w-full max-w-2xl mx-auto"
       >
-        <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
-        <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
-        <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
+         <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
+          <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
+          <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
           <Image
             src="https://images.unsplash.com/photo-1533983333333-d8745b1a42f3?q=80&w=1200&h=800"
             alt="StudyWise AI Dashboard Mockup"
             width={1200}
             height={800}
-            className="w-full"
+            className="w-full relative rounded-2xl"
             data-ai-hint="train station sunset"
             priority
           />
@@ -154,7 +169,6 @@ const TrustedSection = () => (
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true }}
-    transition={{ duration: 0.5, delay: 0.2 }}
     variants={sectionVariants}
     className="py-8 bg-secondary/50"
   >
@@ -210,7 +224,6 @@ const FeatureShowcaseSection = () => (
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true }}
-    transition={{ duration: 0.5, delay: 0.2 }}
     variants={sectionVariants}
     className="py-20 md:py-28"
   >
@@ -224,15 +237,17 @@ const FeatureShowcaseSection = () => (
           academic success.
         </p>
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {features.map((feature, i) => (
+      <motion.div 
+        className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={sectionVariants}
+      >
+        {features.map((feature) => (
           <motion.div
             key={feature.title}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 * i }}
-            variants={sectionVariants}
+            variants={itemVariants}
           >
             <Card
               className="text-center p-2 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 h-full"
@@ -253,7 +268,7 @@ const FeatureShowcaseSection = () => (
             </Card>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   </motion.section>
 );
@@ -264,7 +279,6 @@ const HowItWorksSection = () => (
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true }}
-    transition={{ duration: 0.5, delay: 0.2 }}
     variants={sectionVariants}
     className="py-20 md:py-28 bg-secondary/30"
   >
@@ -281,11 +295,7 @@ const HowItWorksSection = () => (
       <div className="relative grid md:grid-cols-3 gap-8">
         <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          variants={sectionVariants}
+          variants={itemVariants}
           className="relative flex flex-col items-center text-center"
         >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
@@ -300,11 +310,7 @@ const HowItWorksSection = () => (
           </p>
         </motion.div>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          variants={sectionVariants}
+          variants={itemVariants}
           className="relative flex flex-col items-center text-center"
         >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
@@ -319,11 +325,7 @@ const HowItWorksSection = () => (
           </p>
         </motion.div>
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          variants={sectionVariants}
+          variants={itemVariants}
           className="relative flex flex-col items-center text-center"
         >
           <div className="relative h-16 w-16 flex items-center justify-center rounded-full bg-background border-2 border-primary shadow-lg">
@@ -348,7 +350,6 @@ const PricingSection = () => (
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true }}
-    transition={{ duration: 0.5, delay: 0.2 }}
     variants={sectionVariants}
     className="py-20 md:py-28"
   >
@@ -363,47 +364,55 @@ const PricingSection = () => (
         </p>
       </div>
       <div className="flex justify-center">
-        <Card className="max-w-md w-full shadow-2xl shadow-blue-500/10 dark:shadow-blue-500/5 border-2 border-primary">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline">Free Plan</CardTitle>
-            <CardDescription>
-              All the essentials to get you started.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" /> AI Study
-                Planner
-              </li>
-              <li className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" /> Flashcard
-                Generator
-              </li>
-              <li className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" /> Essay Analyzer
-              </li>
-              <li className="flex items-center gap-3">
-                <CheckCircle className="h-5 w-5 text-green-500" /> Basic
-                Analytics
-              </li>
-            </ul>
-            <Button
-              asChild
-              size="lg"
-              className="w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white"
-            >
-              <Link href="/signup">Get Started - It's Free</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card className="max-w-md w-full shadow-2xl shadow-blue-500/10 dark:shadow-blue-500/5 border-2 border-primary">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-headline">Free Plan</CardTitle>
+              <CardDescription>
+                All the essentials to get you started.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500" /> AI Study
+                  Planner
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500" /> Flashcard
+                  Generator
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500" /> Essay Analyzer
+                </li>
+                <li className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-500" /> Basic
+                  Analytics
+                </li>
+              </ul>
+              <Button
+                asChild
+                size="lg"
+                className="w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white"
+              >
+                <Link href="/signup">Get Started - It's Free</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   </motion.section>
 );
 
 const Footer = () => (
-  <footer className="py-8 border-t">
+  <motion.footer 
+    className="py-8 border-t"
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true }}
+    variants={sectionVariants}
+  >
     <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         <Logo />
@@ -420,7 +429,7 @@ const Footer = () => (
         </Link>
       </nav>
     </div>
-  </footer>
+  </motion.footer>
 );
 
 export default function LandingPage() {
@@ -438,3 +447,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
