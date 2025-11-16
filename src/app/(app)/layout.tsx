@@ -12,17 +12,20 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupAction,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  BookOpen,
-  FileText,
-  Flame,
   LayoutGrid,
   LogOut,
   Settings,
-  Target,
-  Timer,
+  Folder,
+  Compass,
+  Plus,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -39,10 +42,8 @@ import { Button } from '@/components/ui/button';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { href: '/essay-review', label: 'Essay Review', icon: FileText },
-  { href: '/study-plan', label: 'Study Plan', icon: Target },
-  { href: '/flashcards', label: 'Flashcards', icon: BookOpen },
-  { href: '/focus-mode', label: 'Focus Mode', icon: Timer },
+  { href: '/my-collection', label: 'My Collection', icon: Folder },
+  { href: '/explore', label: 'Explore', icon: Compass },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -58,12 +59,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar collapsible="icon" side="left">
+        <Sidebar collapsible="icon" side="left" variant="sidebar">
           <SidebarHeader>
-            <div className="flex items-center justify-between">
-              <Logo />
-              <SidebarTrigger className="md:hidden" />
-            </div>
+             <Logo />
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
@@ -82,58 +80,66 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+            <SidebarGroup className="mt-4">
+                <SidebarGroupLabel className="flex items-center">
+                    <span>Folders</span>
+                </SidebarGroupLabel>
+                <SidebarGroupAction>
+                    <Plus/>
+                </SidebarGroupAction>
+            </SidebarGroup>
           </SidebarContent>
           <SidebarFooter>
-             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="justify-start w-full h-auto p-2">
-                   <div className="flex items-center gap-3 w-full">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'} />
-                        <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
-                      </Avatar>
-                      <div className="text-left overflow-hidden group-data-[collapsible=icon]:hidden">
-                        <p className="font-medium text-sm truncate">{user?.displayName}</p>
-                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                      </div>
-                   </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user?.displayName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/dashboard')}>
-                  <LayoutGrid className="mr-2 h-4 w-4" />
-                  <span>Dashboard</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+             <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                        <Link href="#">
+                            <Settings/>
+                            <span>Settings</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:pt-4 mb-4">
-              <SidebarTrigger className="hidden md:flex" />
-              <h1 className="text-xl font-semibold text-foreground">
-                {navItems.find(item => pathname.startsWith(item.href))?.label || 'StudyWise AI'}
-              </h1>
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-6">
+              <SidebarTrigger className="md:hidden" />
+              <div/>
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"/>
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                       <Avatar className="h-8 w-8">
+                         <AvatarImage src={user?.photoURL || undefined} alt={user?.displayName || 'User'} />
+                         <AvatarFallback>{getInitials(user?.displayName)}</AvatarFallback>
+                       </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
           </header>
-          <main className="p-4 sm:px-6 sm:py-0 flex-1">{children}</main>
+          <main className="p-6 flex-1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>
