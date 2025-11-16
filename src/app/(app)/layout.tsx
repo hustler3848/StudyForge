@@ -15,18 +15,15 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  LayoutGrid,
+  Home,
   LogOut,
   Settings,
-  BookOpen,
-  BrainCircuit,
-  CalendarDays,
-  Clock,
-  Sun,
-  Moon,
-  Home,
   FileText,
   Book,
+  Clock,
+  CalendarDays,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
