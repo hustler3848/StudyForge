@@ -7,12 +7,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import Groq from 'groq-sdk';
+import pdf from 'pdf-parse';
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // INPUT SCHEMA
 const GenerateFlashcardsInputSchema = z.object({
-  text: z.string(),
+  text: z.string().optional(),
+  pdfData: z.string().optional(),
 });
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsInputSchema>;
 
@@ -43,6 +45,18 @@ const generateFlashcardsFlow = ai.defineFlow(
     outputSchema: GenerateFlashcardsOutputSchema,
   },
   async (input) => {
+    let sourceText = input.text;
+
+    if (input.pdfData) {
+      const pdfBuffer = Buffer.from(input.pdfData, 'base64');
+      const data = await pdf(pdfBuffer);
+      sourceText = data.text;
+    }
+
+    if (!sourceText) {
+      throw new Error('No text provided from either text input or PDF.');
+    }
+
     const systemPrompt = `
 You are an expert educator who creates flashcards from text.
 Return ONLY VALID JSON. No markdown, no commentary.
@@ -61,10 +75,10 @@ The JSON MUST follow this structure:
 }
 `;
 
-    const userPrompt = `Text:\n${input.text}`;
+    const userPrompt = `Text:\n${sourceText}`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-70b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }

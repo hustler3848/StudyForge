@@ -10,13 +10,30 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { BookOpen, Sparkles, BrainCircuit } from 'lucide-react';
+import { BookOpen, Sparkles, BrainCircuit, FileUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 import { generateFlashcards, type GenerateFlashcardsOutput } from '@/ai/flows/flashcard-generation';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_FILE_TYPES = ["application/pdf"];
+
 const flashcardSchema = z.object({
-  notes: z.string().min(100, 'Please provide at least 100 characters of notes to generate flashcards.'),
+  notes: z.string().optional(),
+  pdfFile: z.any()
+    .optional()
+    .refine(
+      (file) => !file || file.size <= MAX_FILE_SIZE,
+      `Max file size is 5MB.`
+    )
+    .refine(
+      (file) => !file || ACCEPTED_FILE_TYPES.includes(file.type),
+      "Only .pdf files are accepted."
+    ),
+}).refine(data => !!data.notes || !!data.pdfFile, {
+  message: "Please either paste notes or upload a PDF file.",
+  path: ["notes"], // you can set the error path to one of the fields
 });
 
 type FlashcardFormValues = z.infer<typeof flashcardSchema>;
@@ -31,20 +48,55 @@ export default function FlashcardsPage() {
     resolver: zodResolver(flashcardSchema),
     defaultValues: { notes: '' },
   });
+  
+  const fileRef = form.register("pdfFile");
 
   async function onSubmit(data: FlashcardFormValues) {
     setIsLoading(true);
     setGeneratedDeck(null);
     setError(null);
+
     try {
-      const result = await generateFlashcards({ text: data.notes });
-      setGeneratedDeck(result);
-      localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
+      let result;
+      if (data.pdfFile && data.pdfFile.size > 0) {
+        const file = data.pdfFile;
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+          const base64Data = (reader.result as string).split(',')[1];
+          try {
+            const uploadResult = await generateFlashcards({ pdfData: base64Data });
+            setGeneratedDeck(uploadResult);
+            localStorage.setItem('temp-deck', JSON.stringify(uploadResult.flashcards));
+          } catch(e) {
+             console.error('Error generating flashcards from PDF:', e);
+             setError('Sorry, the AI failed to process the PDF. It might be corrupted or empty.');
+          } finally {
+             setIsLoading(false);
+          }
+        };
+        reader.onerror = () => {
+          setError('Failed to read the PDF file.');
+          setIsLoading(false);
+        };
+        return; // The result is handled in the onload callback
+      } else if (data.notes) {
+        result = await generateFlashcards({ text: data.notes });
+        setGeneratedDeck(result);
+        localStorage.setItem('temp-deck', JSON.stringify(result.flashcards));
+      } else {
+        setError("No input provided.");
+        setIsLoading(false);
+        return;
+      }
     } catch (error) {
       console.error('Error generating flashcards:', error);
       setError('Sorry, the AI failed to generate flashcards. Please try again.');
     } finally {
-      setIsLoading(false);
+      if (!data.pdfFile || data.pdfFile.size === 0) {
+        setIsLoading(false);
+      }
     }
   }
   
@@ -57,7 +109,7 @@ export default function FlashcardsPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Flashcard Generator</CardTitle>
-          <CardDescription>Paste your notes, and our AI will create a study deck for you.</CardDescription>
+          <CardDescription>Paste your notes or upload a PDF, and our AI will create a study deck for you.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -67,11 +119,11 @@ export default function FlashcardsPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="sr-only">Your Notes</FormLabel>
+                    <FormLabel>Paste Notes</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Paste your class notes, textbook chapter, or any text here..."
-                        className="min-h-[400px] resize-y"
+                        className="min-h-[250px] resize-y"
                         {...field}
                       />
                     </FormControl>
@@ -79,6 +131,37 @@ export default function FlashcardsPage() {
                   </FormItem>
                 )}
               />
+              
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="pdfFile"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Upload PDF</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-2">
+                        <FileUp className="h-5 w-5 text-muted-foreground" />
+                        <Input 
+                          type="file" 
+                          accept=".pdf"
+                          onChange={(e) => field.onChange(e.target.files ? e.target.files[0] : null)}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Generating Deck...' : 'Create Flashcards'}
               </Button>
@@ -138,7 +221,7 @@ export default function FlashcardsPage() {
                 <div className="text-center text-muted-foreground p-8">
                     <BookOpen className="h-12 w-12 mx-auto mb-4" />
                     <h3 className="font-semibold text-lg">Your new flashcard deck will appear here.</h3>
-                    <p>Paste your notes to get started.</p>
+                    <p>Paste your notes or upload a PDF to get started.</p>
                 </div>
             </Card>
         )}
