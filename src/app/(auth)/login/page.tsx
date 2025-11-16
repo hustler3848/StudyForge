@@ -78,7 +78,7 @@ export default function SignInPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="w-full max-w-sm">
+        <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
             <CardDescription>Sign in to access your study tools.</CardDescription>
