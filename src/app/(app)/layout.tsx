@@ -71,10 +71,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar collapsible="icon" variant="sidebar" side="left">
+        <Sidebar>
           <SidebarHeader>
              <Logo />
-             <SidebarToggleButton />
           </SidebarHeader>
           
           <SidebarContent>
@@ -87,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         tooltip={item.label}
                     >
                         <Link href={item.href}>
-                        <item.icon />
+                        <item.icon className="h-5 w-5" />
                         <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">{item.label}</span>
                         </Link>
                     </SidebarMenuButton>
@@ -101,7 +100,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings">
                   <Link href="/settings">
-                    <Settings/>
+                    <Settings className="h-5 w-5" />
                     <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Settings</span>
                   </Link>
                 </SidebarMenuButton>
