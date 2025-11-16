@@ -301,7 +301,7 @@ const HowItWorksSection = () => (
         </p>
       </div>
       <div className="relative grid md:grid-cols-3 gap-8">
-        <div className="absolute top-1/2 left-0 w-full h-0.5 bg-border -translate-y-1/2 hidden md:block"></div>
+        <div className="absolute top-8 left-0 w-full h-0.5 bg-border hidden md:block"></div>
         <motion.div
           variants={itemVariants}
           className="relative flex flex-col items-center text-center"
