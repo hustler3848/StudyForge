@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Card,
   CardHeader,
@@ -23,10 +24,12 @@ import {
   BrainCircuit,
   CalendarDays,
   Clock,
-  ArrowRight,
+  Lightbulb,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { generateMotivationNudge } from "@/ai/flows/ai-motivation-nudges";
 
 const features = [
   {
@@ -62,6 +65,36 @@ const features = [
     bgColor: "bg-orange-50 dark:bg-orange-900/30",
   },
 ];
+
+function MotivationalQuote() {
+  const [quote, setQuote] = useState("Loading your daily inspiration...");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    generateMotivationNudge()
+      .then((result) => setQuote(result.message))
+      .catch(() => setQuote("The secret to getting ahead is getting started."))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  return (
+    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Lightbulb className="text-yellow-400" />
+          <span>Quote of the Day</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-6 w-full animate-pulse rounded-md bg-muted-foreground/20" />
+        ) : (
+          <p className="text-muted-foreground italic">"{quote}"</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -161,8 +194,13 @@ export default function DashboardPage() {
             )}
           </Card>
         </div>
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight mb-4">
+        <div className="space-y-6">
+           <h2 className="text-xl md:text-2xl font-bold tracking-tight">
+            Stay Motivated
+          </h2>
+          <MotivationalQuote />
+
+           <h2 className="text-xl md:text-2xl font-bold tracking-tight pt-2">
             Continue Studying
           </h2>
           <Card>
@@ -184,3 +222,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

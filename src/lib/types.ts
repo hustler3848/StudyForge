@@ -1,4 +1,5 @@
 
+
 export type UserProfile = {
   gradeLevel: string;
   subjects: string[];
@@ -25,6 +26,7 @@ export type AppUser = {
   profileComplete: boolean;
   profile?: UserProfile;
   studyPlan?: StudyPlan;
+  studyStreak?: number;
 };
 
 export type Essay = {
@@ -54,3 +56,5 @@ export type FlashcardDeck = {
   flashcards: Flashcard[];
   createdAt: Date;
 };
+
+    

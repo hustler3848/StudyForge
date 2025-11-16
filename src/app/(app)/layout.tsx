@@ -13,7 +13,8 @@ import {
   SidebarFooter,
   SidebarInset,
   SidebarTrigger,
-  SidebarSeparator
+  SidebarToggleButton,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -25,8 +26,8 @@ import {
   CalendarDays,
   Sun,
   Moon,
-  ChevronLeft,
-  Settings
+  Settings,
+  Sparkles,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -40,9 +41,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -51,23 +51,6 @@ const navItems = [
   { href: '/flashcards', label: 'Flashcards', icon: Book },
   { href: '/focus-mode', label: 'Focus Mode', icon: Clock },
 ];
-
-function SidebarToggleButton() {
-    const { toggleSidebar } = useSidebar();
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-            "rounded-full h-8 w-8 bg-background absolute -right-4 top-1/2 -translate-y-1/2 z-50 border transition-all",
-            "group-data-[collapsible=icon]:rotate-180"
-        )}
-        onClick={toggleSidebar}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-    );
-}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -87,6 +70,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthGuard>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar" side="left">
+          <SidebarToggleButton />
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -113,7 +97,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings">
-                  <Link href="#">
+                  <Link href="/settings">
                     <Settings/>
                     <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Settings</span>
                   </Link>
@@ -121,7 +105,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
-          <SidebarToggleButton />
         </Sidebar>
         <SidebarInset>
           <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
@@ -150,7 +133,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                         </p>
                       </div>
                     </DropdownMenuLabel>
+                     {user?.studyStreak && user.studyStreak > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled>
+                           <div className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-orange-400" />
+                            <span className="font-semibold">{user.studyStreak}-day</span>
+                            <span className="text-muted-foreground">Study Streak!</span>
+                           </div>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={logout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Log out</span>
@@ -165,3 +164,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthGuard>
   );
 }
+
+    

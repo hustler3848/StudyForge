@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       displayName: 'Test User',
       photoURL: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
       profileComplete: false,
+      studyStreak: 5, // Mock data for study streak
     };
     localStorage.setItem('studywise-user', JSON.stringify(mockUser));
     setUser(mockUser);
@@ -76,3 +78,5 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+    
