@@ -176,7 +176,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
+    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -217,7 +217,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40 border-r",
+           "peer hidden md:flex sticky top-0 h-screen flex-col transition-all duration-300 ease-in-out z-40 border-r relative",
            "group-data-[state=expanded]/sidebar-wrapper:w-[--sidebar-width]",
            "group-data-[state=collapsed]/sidebar-wrapper:w-[--sidebar-width-icon]",
            variant === 'floating' && 'm-2 rounded-lg border shadow',
@@ -229,10 +229,9 @@ const Sidebar = React.forwardRef<
         data-collapsible={collapsible}
         data-variant={variant}
         data-side={side}
-        onClick={toggleSidebar}
         {...props}
       >
-        <div className="relative h-full w-full flex flex-col" onClick={(e) => e.stopPropagation()}>{children}</div>
+        {children}
       </aside>
     )
   }
