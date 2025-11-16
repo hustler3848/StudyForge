@@ -3,22 +3,21 @@ import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Playfair_Display, PT_Sans } from 'next/font/google';
+import { Space_Grotesk, DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/context/theme-provider';
 
-const playfair = Playfair_Display({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-headline',
+  variable: '--font-space-grotesk',
 });
 
-const ptSans = PT_Sans({
+const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
   display: 'swap',
-  variable: '--font-body',
+  variable: '--font-dm-sans',
 });
-
 
 export const metadata: Metadata = {
   title: 'StudyWise AI',
@@ -35,8 +34,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',
-          playfair.variable,
-          ptSans.variable,
+          spaceGrotesk.variable,
+          dmSans.variable
         )}
       >
         <ThemeProvider

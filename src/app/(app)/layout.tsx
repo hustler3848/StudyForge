@@ -72,11 +72,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthGuard>
       <SidebarProvider>
         <Sidebar>
-          <SidebarHeader>
-             <Logo />
-             <SidebarToggleButton />
+          <SidebarHeader className='p-4'>
+            <Logo />
           </SidebarHeader>
-          
+          <SidebarToggleButton />
           <SidebarContent>
             <SidebarMenu>
               {navItems.map((item) => (
