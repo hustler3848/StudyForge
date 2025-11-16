@@ -56,7 +56,7 @@ ${JSON.stringify(GenerateFlashcardsOutputSchema.shape)}
     const userPrompt = `Text: ${input.text}`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-70b-instant",
+      model: "llama-3.1-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
@@ -72,8 +72,7 @@ ${JSON.stringify(GenerateFlashcardsOutputSchema.shape)}
     try {
       const parsed = JSON.parse(cleanedResponse || '{}');
       return GenerateFlashcardsOutputSchema.parse(parsed);
-    } catch (e) {
-      console.error("Failed to parse AI response:", e);
+    } catch (e)      console.error("Failed to parse AI response:", e);
       throw new Error("The AI returned an invalid response format.");
     }
   }
