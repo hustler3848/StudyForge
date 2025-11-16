@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -39,6 +40,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { StudyPlan } from "@/lib/types";
 
 const studyPlanSchema = z.object({
   tasks: z
@@ -119,8 +121,8 @@ const parseTimetable = (timetable: string): ParsedDay[] => {
 };
 
 export default function StudyPlanPage() {
-  const { user } = useAuth();
-  const [plan, setPlan] = useState<GenerateStudyPlanOutput | null>(null);
+  const { user, updateUserProfile } = useAuth();
+  const [plan, setPlan] = useState<StudyPlan | null>(user?.studyPlan || null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -170,7 +172,13 @@ export default function StudyPlanPage() {
 
     try {
       const result = await generateStudyPlan(input);
-      setPlan(result);
+      const newPlan: StudyPlan = {
+        ...result,
+        id: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+      setPlan(newPlan);
+      updateUserProfile({ studyPlan: newPlan });
     } catch (error) {
       console.error("Error generating study plan:", error);
       setError("Sorry, the AI failed to generate a study plan. Please try again.");
@@ -368,11 +376,11 @@ export default function StudyPlanPage() {
                                 "px-2 py-1 text-xs font-semibold rounded-full",
                                 {
                                   "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300":
-                                    session.priority === "high",
+                                    session.priority.toLowerCase() === "high",
                                   "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300":
-                                    session.priority === "medium",
+                                    session.priority.toLowerCase() === "medium",
                                   "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300":
-                                    session.priority === "low",
+                                    session.priority.toLowerCase() === "low",
                                 }
                               )}
                             >

@@ -1,8 +1,20 @@
+
 export type UserProfile = {
   gradeLevel: string;
   subjects: string[];
   examDates?: string[];
   weeklyFreeHours: number;
+};
+
+export type StudyPlan = {
+  id: string;
+  dailySessions: {
+    subject: string;
+    priority: string;
+    estimatedTime: string;
+  }[];
+  weeklyTimetable: string;
+  createdAt: string; // Using ISO string for serialization
 };
 
 export type AppUser = {
@@ -12,6 +24,7 @@ export type AppUser = {
   photoURL: string | null;
   profileComplete: boolean;
   profile?: UserProfile;
+  studyPlan?: StudyPlan;
 };
 
 export type Essay = {
@@ -25,17 +38,6 @@ export type Essay = {
     toneAnalysis: string;
     correctedRewrite?: string;
   };
-  createdAt: Date;
-};
-
-export type StudyPlan = {
-  id: string;
-  dailySessions: {
-    subject: string;
-    priority: string;
-    estimatedTime: string;
-  }[];
-  weeklyTimetable: string;
   createdAt: Date;
 };
 

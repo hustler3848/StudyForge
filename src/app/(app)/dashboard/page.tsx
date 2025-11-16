@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -7,6 +8,14 @@ import {
   CardContent,
   CardDescription,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -17,6 +26,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -25,7 +35,7 @@ const features = [
     href: "/essay-review",
     icon: BookOpen,
     color: "text-blue-500",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-blue-50 dark:bg-blue-900/30",
   },
   {
     title: "Flashcard Generator",
@@ -33,7 +43,7 @@ const features = [
     href: "/flashcards",
     icon: BrainCircuit,
     color: "text-purple-500",
-    bgColor: "bg-purple-50",
+    bgColor: "bg-purple-50 dark:bg-purple-900/30",
   },
   {
     title: "Smart Study Plan",
@@ -41,7 +51,7 @@ const features = [
     href: "/study-plan",
     icon: CalendarDays,
     color: "text-green-500",
-    bgColor: "bg-green-50",
+    bgColor: "bg-green-50 dark:bg-green-900/30",
   },
   {
     title: "Focus Mode",
@@ -49,12 +59,13 @@ const features = [
     href: "/focus-mode",
     icon: Clock,
     color: "text-orange-500",
-    bgColor: "bg-orange-50",
+    bgColor: "bg-orange-50 dark:bg-orange-900/30",
   },
 ];
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const upcomingTasks = user?.studyPlan?.dailySessions || [];
 
   return (
     <div className="animate-in fade-in-50 space-y-8">
@@ -70,7 +81,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((feature) => (
           <Link href={feature.href} key={feature.title} className="block group">
-            <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-md">
+            <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-lg hover:border-primary/50">
               <CardHeader>
                 <div
                   className={`p-3 rounded-full w-min ${feature.bgColor}`}
@@ -97,18 +108,57 @@ export default function DashboardPage() {
             Upcoming Tasks
           </h2>
           <Card>
-            <CardContent className="p-4 sm:p-6">
-              <div className="text-center text-muted-foreground p-4 sm:p-8">
-                <CalendarDays className="h-12 w-12 mx-auto mb-4" />
-                <h3 className="font-semibold text-lg">No upcoming tasks</h3>
-                <p className="text-sm sm:text-base">
-                  Create a study plan to see your tasks here.
-                </p>
-                <Button variant="secondary" className="mt-4" asChild>
-                  <Link href="/study-plan">Create Plan</Link>
-                </Button>
-              </div>
-            </CardContent>
+            {upcomingTasks.length > 0 ? (
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {upcomingTasks.map((task, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{task.subject}</TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "px-2 py-1 text-xs font-semibold rounded-full",
+                              {
+                                "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300":
+                                  task.priority.toLowerCase() === "high",
+                                "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300":
+                                  task.priority.toLowerCase() === "medium",
+                                "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300":
+                                  task.priority.toLowerCase() === "low",
+                              }
+                            )}
+                          >
+                            {task.priority}
+                          </span>
+                        </TableCell>
+                        <TableCell>{task.estimatedTime}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            ) : (
+              <CardContent className="p-4 sm:p-6">
+                <div className="text-center text-muted-foreground p-4 sm:p-8">
+                  <CalendarDays className="h-12 w-12 mx-auto mb-4" />
+                  <h3 className="font-semibold text-lg">No upcoming tasks</h3>
+                  <p className="text-sm sm:text-base">
+                    Create a study plan to see your tasks here.
+                  </p>
+                  <Button variant="secondary" className="mt-4" asChild>
+                    <Link href="/study-plan">Create Plan</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            )}
           </Card>
         </div>
         <div>
