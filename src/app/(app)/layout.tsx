@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -52,7 +53,7 @@ const navItems = [
 ];
 
 function SidebarToggleButton() {
-    const { toggleSidebar, state } = useSidebar();
+    const { toggleSidebar } = useSidebar();
     return (
       <Button
         variant="ghost"
@@ -86,6 +87,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthGuard>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar" side="left">
+          <SidebarToggleButton />
           <SidebarHeader>
              <Logo />
           </SidebarHeader>
@@ -113,11 +115,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings">
                   <Link href="#">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
-                      <AvatarFallback className="text-xs bg-muted-foreground">{getInitials(user?.displayName)}</AvatarFallback>
-                    </Avatar>
-                    <span className="sr-only">Settings</span>
+                    <Settings/>
+                    <span>Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
