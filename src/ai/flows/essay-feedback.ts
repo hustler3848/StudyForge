@@ -55,7 +55,7 @@ ${JSON.stringify(AnalyzeEssayOutputSchema.shape)}
     const userPrompt = `Essay:\n${input.text}`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile",
+      model: "llama-3.1-405b-reasoning",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
