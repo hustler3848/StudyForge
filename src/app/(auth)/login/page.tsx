@@ -2,9 +2,7 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
 import { useAuth } from "@/hooks/use-auth";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 function GoogleIcon() {
@@ -35,9 +33,6 @@ export default function LoginPage() {
 
   return (
     <div className="container mx-auto flex w-full flex-1 flex-col items-center justify-center gap-12 px-4 text-center">
-      <Link href="/" className="absolute top-8 left-8">
-        <Logo />
-      </Link>
       <div className="flex flex-col items-center gap-4">
         
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-sky-500 to-blue-400 text-transparent bg-clip-text">
