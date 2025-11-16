@@ -216,7 +216,7 @@ const Sidebar = React.forwardRef<
       <aside
         ref={ref}
         className={cn(
-           "peer hidden md:flex sticky top-0 h-screen flex-col text-sidebar-foreground transition-all duration-300 ease-in-out",
+           "peer hidden md:flex sticky top-0 h-screen flex-col bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out overflow-x-hidden",
            state === 'expanded' ? 'w-[--sidebar-width]' : 'w-[--sidebar-width-icon]',
            side === 'left' ? 'border-r' : 'border-l',
            variant === 'floating' && 'm-2 rounded-lg border shadow',
