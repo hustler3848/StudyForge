@@ -412,7 +412,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "relative flex flex-1 min-h-0 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-visible p-4",
+        "relative flex flex-1 min-h-0 flex-col gap-2 group-data-[collapsible=icon]:overflow-visible p-4",
         className
       )}
       {...props}
@@ -770,5 +770,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
-    
