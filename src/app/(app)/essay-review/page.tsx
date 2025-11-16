@@ -70,6 +70,7 @@ const ScoreCircle = ({ score, label }: { score: number; label: string }) => (
         strokeWidth="3"
         strokeLinecap="round"
         transform="rotate(90 18 18)"
+        className="transition-all duration-1000 ease-out"
       />
     </svg>
     <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -254,5 +255,3 @@ export default function EssayReviewPage() {
     </div>
   );
 }
-
-    

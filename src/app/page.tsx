@@ -110,7 +110,7 @@ const Header = () => {
               href="/signup"
               className={cn(
                 buttonVariants({ variant: 'default' }),
-                'bg-gradient-to-r from-blue-500 to-sky-400 text-white'
+                'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
               )}
             >
               Get Started
@@ -147,7 +147,7 @@ const HeroSection = () => (
             href="/signup"
             className={cn(
               buttonVariants({ size: 'lg' }),
-              'bg-gradient-to-r from-blue-500 to-sky-400 text-white'
+              'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
             )}
           >
             Start Free - No signup needed
@@ -258,11 +258,11 @@ const FeatureShowcaseSection = () => (
             variants={itemVariants}
           >
             <Card
-              className="text-center p-2 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:shadow-lg transition-all duration-300 h-full"
+              className="text-center p-2 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full"
             >
               <CardHeader>
-                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/50 dark:to-sky-900/50 mb-4">
-                  <feature.icon className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/50 dark:to-sky-900/50 mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="w-8 h-8 text-sky-600 dark:text-sky-400 group-hover:animate-bounce" />
                 </div>
                 <CardTitle className="font-headline text-xl">
                   {feature.title}
@@ -401,7 +401,7 @@ const PricingSection = () => (
               <Button
                 asChild
                 size="lg"
-                className="w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white"
+                className="w-full bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow"
               >
                 <Link href="/signup">Get Started - It's Free</Link>
               </Button>
@@ -455,5 +455,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
