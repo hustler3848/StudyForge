@@ -1,3 +1,6 @@
+
+"use client"
+
 import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
@@ -9,30 +12,46 @@ import {
   BarChart,
   Star,
   CheckCircle,
+  Sun,
+  Moon,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useTheme } from "next-themes";
 
 
-const Header = () => (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm">
-      <div className="container flex h-16 max-w-7xl items-center">
-        <div className="flex items-center gap-6">
-          <Logo />
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="#features" className="text-foreground/60 transition-colors hover:text-foreground/80">Features</Link>
-            <Link href="#how-it-works" className="text-foreground/60 transition-colors hover:text-foreground/80">How it works</Link>
-            <Link href="#pricing" className="text-foreground/60 transition-colors hover:text-foreground/80">Pricing</Link>
-          </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <Link href="/signin" className={cn(buttonVariants({ variant: "ghost" }))}>Login</Link>
-          <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Get Started</Link>
-        </div>
-      </div>
-    </header>
-);
+const Header = () => {
+    const { setTheme, theme } = useTheme();
+
+    const toggleTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    }
+
+    return (
+        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-sm">
+          <div className="container flex h-16 max-w-7xl items-center">
+            <div className="flex items-center gap-6">
+              <Logo />
+              <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <Link href="#features" className="text-foreground/60 transition-colors hover:text-foreground/80">Features</Link>
+                <Link href="#how-it-works" className="text-foreground/60 transition-colors hover:text-foreground/80">How it works</Link>
+                <Link href="#pricing" className="text-foreground/60 transition-colors hover:text-foreground/80">Pricing</Link>
+              </nav>
+            </div>
+            <div className="flex flex-1 items-center justify-end space-x-2">
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"/>
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              <Link href="/signin" className={cn(buttonVariants({ variant: "ghost" }))}>Login</Link>
+              <Link href="/signup" className={cn(buttonVariants({ variant: "default" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Get Started</Link>
+            </div>
+          </div>
+        </header>
+    );
+}
 
 const HeroSection = () => (
   <section className="py-20 md:py-32">
@@ -50,7 +69,7 @@ const HeroSection = () => (
           <Link href="/signup" className={cn(buttonVariants({ size: "lg" }), "bg-gradient-to-r from-blue-500 to-sky-400 text-white")}>Start Free - No signup needed</Link>
         </div>
       </div>
-      <div className="relative w-full max-w-2xl mx-auto">
+      <div className="relative w-full max-w-2xl mx-auto overflow-hidden">
          <div className="absolute -top-4 -right-4 w-48 h-48 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob dark:hidden"></div>
          <div className="absolute -bottom-8 -left-4 w-48 h-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000 dark:hidden"></div>
         <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-sky-200/50 dark:shadow-sky-900/50">
