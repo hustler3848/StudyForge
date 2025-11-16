@@ -35,6 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             router.push('/dashboard');
           }
         } else {
+           // This case is primarily for when a user is already logged in to Google
+           // but doesn't have a profile in our app yet. signInWithGoogle handles the
+           // main new user creation flow.
            const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
            await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
            setUser(newAppUser);
@@ -69,19 +72,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!docSnap.exists()) {
         const newAppUser = createUserProfileFromFirebaseUser(firebaseUser);
+        // Important: create the user doc *before* routing
         await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp(), uid: firebaseUser.uid });
         setUser(newAppUser);
       } else {
-        const appUser = docSnap.data() as AppUser;
-        setUser(appUser);
+        // If doc exists, the onAuthStateChanged listener will handle setting the user
       }
        router.push('/dashboard');
     } catch (error) {
       console.error("Error during sign-in:", error);
       setUser(null);
-    } finally {
-      // setLoading(false) is handled by the onAuthStateChanged listener
-    }
+      setLoading(false);
+    } 
+    // finally block removed as onAuthStateChanged handles the final loading state
   };
 
   const logout = async () => {

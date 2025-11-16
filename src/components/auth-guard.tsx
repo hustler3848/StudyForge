@@ -3,7 +3,7 @@
 
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 import { DashboardSkeleton } from './skeletons/dashboard-skeleton';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -13,14 +13,25 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/signin');
+      // If not loading and no user, redirect to signin
+      if (pathname !== '/signin' && pathname !== '/signup') {
+        router.push('/signin');
+      }
     }
-  }, [user, loading, router]);
+    
+    if (!loading && user) {
+        // If user profile is not complete, redirect to onboarding
+        if (!user.profileComplete && pathname !== '/onboarding') {
+            router.push('/onboarding');
+        }
+        // If profile is complete but they are on an auth or onboarding page, redirect to dashboard
+        else if (user.profileComplete && (pathname === '/onboarding' || pathname === '/signin' || pathname === '/signup')) {
+            router.push('/dashboard');
+        }
+    }
+  }, [user, loading, router, pathname]);
   
-  // This check is now simplified. 
-  // If the user data is still loading, show the main dashboard skeleton.
-  // Once the user is loaded, the actual page content (or a more specific loading.tsx) will render.
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="p-4 sm:p-6">
         <DashboardSkeleton />
@@ -28,27 +39,25 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If a new user lands on a page before their profile is "complete"
-  // according to your app's logic, redirect them.
-  if (user && !user.profileComplete && pathname !== '/onboarding') {
-    router.push('/onboarding');
-    return (
-       <div className="p-4 sm:p-6">
+  // If we are on an auth page, and we are not logged in, render the page.
+  if (!user && (pathname === '/signin' || pathname === '/signup')) {
+      return <>{children}</>;
+  }
+  
+  // If we have a user and they are on the right page, render children
+  if (user) {
+    if (!user.profileComplete && pathname === '/onboarding') {
+        return <>{children}</>;
+    }
+    if (user.profileComplete && pathname !== '/onboarding' && pathname !== '/signin' && pathname !== '/signup') {
+        return <>{children}</>;
+    }
+  }
+
+  // Fallback while routing takes place
+  return (
+      <div className="p-4 sm:p-6">
         <DashboardSkeleton />
       </div>
     );
-  }
-
-  // If a user with a complete profile somehow lands on the onboarding page,
-  // send them to the dashboard.
-  if (user && user.profileComplete && pathname === '/onboarding') {
-    router.push('/dashboard');
-    return (
-       <div className="p-4 sm:p-6">
-        <DashboardSkeleton />
-      </div>
-    );
-  }
-
-  return <>{children}</>;
 }
