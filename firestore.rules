@@ -46,7 +46,7 @@ service cloud.firestore {
      * @returns {boolean} True if the user IDs match and the resource exists.
      */
     function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
+      return isOwner(userId) && exists(path);
     }
 
     /**
@@ -55,7 +55,7 @@ service cloud.firestore {
      * @returns {boolean} True if the document ID is not being changed, false otherwise.
      */
     function isDocumentIdImmutable(documentId) {
-      return resource.data.id == documentId;
+      return request.resource.data.id == documentId;
     }
 
     /**
@@ -92,7 +92,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(essayId);
       allow delete: if isExistingOwner(userId);
     }
 
@@ -111,7 +111,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(planId);
       allow delete: if isExistingOwner(userId);
     }
 
@@ -130,7 +130,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(deckId);
       allow delete: if isExistingOwner(userId);
     }
 
@@ -149,7 +149,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(sessionId);
       allow delete: if isExistingOwner(userId);
     }
 
@@ -168,8 +168,10 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow list: if false; // Listing user streaks is not permitted.
       allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(request.resource.data.userId);
+      allow update: if isExistingOwner(userId) && isDocumentIdImmutable(userId);
       allow delete: if isExistingOwner(userId);
     }
   }
 }
+
+    
