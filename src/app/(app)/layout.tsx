@@ -106,27 +106,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
-            <SidebarToggleButton />
           </SidebarContent>
           <SidebarFooter>
             <SidebarSeparator />
-             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton asChild tooltip="Settings">
-                        <Link href="#">
-                            <Avatar className="h-6 w-6">
-                                <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
-                                <AvatarFallback className="text-xs">{getInitials(user?.displayName)}</AvatarFallback>
-                            </Avatar>
-                            <span>Settings</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-             </SidebarMenu>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Settings">
+                  <Link href="#">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
+                      <AvatarFallback className="text-xs bg-muted-foreground">{getInitials(user?.displayName)}</AvatarFallback>
+                    </Avatar>
+                    <span className="sr-only">Settings</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-4 sm:px-6">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
               <SidebarTrigger className="md:hidden"/>
               <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                 <Button variant="ghost" size="icon" onClick={toggleTheme}>
