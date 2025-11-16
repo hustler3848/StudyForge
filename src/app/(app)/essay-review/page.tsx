@@ -111,7 +111,7 @@ export default function EssayReviewPage() {
       
       <div className="space-y-6">
         {isLoading && (
-          <Card className="flex items-center justify-center min-h-[500px]">
+          <Card className="flex items-center justify-center min-h-[500px] shadow-lg">
             <div className="text-center space-y-4">
               <Bot className="h-12 w-12 mx-auto animate-bounce text-primary" />
               <p className="font-semibold">AI is analyzing your essay...</p>
@@ -139,30 +139,43 @@ export default function EssayReviewPage() {
                 <ScoreCircle score={feedback.readabilityScore} label="Readability" />
               </div>
 
-              <Alert>
-                <BarChart className="h-4 w-4" />
-                <AlertTitle>Tone Analysis</AlertTitle>
-                <AlertDescription>{feedback.toneAnalysis}</AlertDescription>
-              </Alert>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
+                    <BarChart className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-lg font-headline">Tone Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">{feedback.toneAnalysis}</p>
+                </CardContent>
+              </Card>
 
-              <Alert>
-                <Lightbulb className="h-4 w-4" />
-                <AlertTitle>Clarity Suggestions</AlertTitle>
-                <AlertDescription>{feedback.claritySuggestions}</AlertDescription>
-              </Alert>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
+                    <Lightbulb className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-lg font-headline">Clarity Suggestions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">{feedback.claritySuggestions}</p>
+                </CardContent>
+              </Card>
 
-              <Alert>
-                <BookText className="h-4 w-4" />
-                <AlertTitle>Structural Suggestions</AlertTitle>
-                <AlertDescription>{feedback.structuralSuggestions}</AlertDescription>
-              </Alert>
+              <Card>
+                <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
+                    <BookText className="h-5 w-5 text-muted-foreground" />
+                    <CardTitle className="text-lg font-headline">Structural Suggestions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">{feedback.structuralSuggestions}</p>
+                </CardContent>
+              </Card>
               
               {feedback.correctedRewrite && (
                  <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg font-headline"><CheckCircle className="text-green-500"/> Corrected Rewrite</CardTitle>
+                    <CardHeader className="flex flex-row items-center gap-2 space-y-0">
+                        <CheckCircle className="h-5 w-5 text-green-500"/> 
+                        <CardTitle className="text-lg font-headline">Corrected Rewrite</CardTitle>
                     </CardHeader>
-                    <CardContent className="prose prose-sm max-h-60 overflow-y-auto bg-secondary p-4 rounded-md">
+                    <CardContent className="prose prose-sm max-h-60 overflow-y-auto bg-secondary p-4 rounded-md mt-2">
                         <p>{feedback.correctedRewrite}</p>
                     </CardContent>
                  </Card>
@@ -172,7 +185,7 @@ export default function EssayReviewPage() {
         )}
         
         {!isLoading && !feedback && !error && (
-          <Card className="flex items-center justify-center min-h-[500px]">
+          <Card className="flex items-center justify-center min-h-[500px] shadow-lg">
             <div className="text-center text-muted-foreground p-8">
               <FileText className="h-12 w-12 mx-auto mb-4" />
               <h3 className="font-semibold text-lg">Your feedback will appear here.</h3>
