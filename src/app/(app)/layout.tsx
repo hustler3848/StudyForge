@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useTheme } from 'next-themes';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -63,11 +64,16 @@ function SidebarToggleButton() {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { setTheme, theme } = useTheme();
   
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  }
 
   return (
     <AuthGuard>
@@ -101,7 +107,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarInset>
           <header className="sticky top-0 z-10 flex h-16 items-center justify-end gap-4 border-b bg-background px-6">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
                   <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"/>
                   <span className="sr-only">Toggle theme</span>

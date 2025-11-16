@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Space_Grotesk, DM_Sans, Fira_Code } from 'next/font/google';
+import { ThemeProvider } from '@/context/theme-provider';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -45,10 +46,17 @@ export default function RootLayout({
           firaCode.variable,
         )}
       >
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
