@@ -1,9 +1,5 @@
 'use server';
 
-export const config = {
-  runtime: 'nodejs'
-};
-
 /**
  * @fileOverview AI-powered flashcard generator from notes or text using Groq.
  */
@@ -17,7 +13,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // INPUT SCHEMA
 const GenerateFlashcardsInputSchema = z.object({
   text: z.string().optional(),
-  pdfData: z.string().optional()
+  pdfData: z.string().optional(),
 });
 export type GenerateFlashcardsInput = z.infer<typeof GenerateFlashcardsInputSchema>;
 
@@ -29,7 +25,7 @@ const GenerateFlashcardsOutputSchema = z.object({
       answer: z.string(),
       type: z.enum(["Q/A", "Definition", "Concept", "Mnemonic"]),
     })
-  )
+  ),
 });
 export type GenerateFlashcardsOutput = z.infer<typeof GenerateFlashcardsOutputSchema>;
 
@@ -66,18 +62,11 @@ const generateFlashcardsFlow = ai.defineFlow(
 You are an expert educator who generates flashcards from text.
 
 RULES:
-- Output MUST be ONLY VALID JSON. No markdown, no extra text.
+- Output MUST be ONLY VALID JSON. No markdown or commentary.
 - Never leave fields empty.
 - "question" must be a clear question.
 - "answer" must be short but complete.
 - "type" must be one of: "Q/A", "Definition", "Concept", "Mnemonic".
-
-Valid JSON structure:
-{
-  "flashcards": [
-    { "question": "...", "answer": "...", "type": "Q/A | Definition | Concept | Mnemonic" }
-  ]
-}
 `;
 
     const userPrompt = `Generate flashcards from the following text:\n${sourceText}`;
@@ -86,19 +75,16 @@ Valid JSON structure:
       model: "llama-3.1-70b-instant",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
+        { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
       temperature: 0.3,
-      max_tokens: 1200
+      max_tokens: 1200,
     });
 
     let jsonText = result.choices?.[0]?.message?.content || "{}";
 
-    jsonText = jsonText
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    jsonText = jsonText.replace(/```json/gi, "").replace(/```/g, "").trim();
 
     let parsed: any;
     try {
@@ -108,15 +94,10 @@ Valid JSON structure:
       throw new Error("Groq returned invalid JSON.");
     }
 
-    // normalize & sanitize
     parsed.flashcards = Array.isArray(parsed.flashcards)
       ? parsed.flashcards.map((fc: any) => ({
-          question: typeof fc.question === "string" && fc.question.trim()
-            ? fc.question.trim()
-            : "What is the key idea?",
-          answer: typeof fc.answer === "string" && fc.answer.trim()
-            ? fc.answer.trim()
-            : "The text explains the main concept.",
+          question: fc.question?.trim() || "What is the key idea?",
+          answer: fc.answer?.trim() || "The text explains the main concept.",
           type: ["Q/A", "Definition", "Concept", "Mnemonic"].includes(fc.type)
             ? fc.type
             : "Q/A",

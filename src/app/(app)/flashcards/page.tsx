@@ -14,7 +14,7 @@ import { BookOpen, Sparkles, BrainCircuit, FileUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 
-import { generateFlashcards, type GenerateFlashcardsOutput } from '@/ai/flows/flashcard-generation';
+import { generateFlashcards, type GenerateFlashcardsOutput } from '@/ai/flows/flashcard-generation.node';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = ["application/pdf"];
