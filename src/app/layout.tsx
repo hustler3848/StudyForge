@@ -3,17 +3,15 @@ import { AuthProvider } from '@/context/auth-context';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { cn } from '@/lib/utils';
-import { Playfair_Display, PT_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
-const fontBody = PT_Sans({
+const fontBody = Inter({
   subsets: ['latin'],
-  weight: ['400', '700'],
   variable: '--font-body',
 });
 
-const fontHeadline = Playfair_Display({
+const fontHeadline = Inter({
   subsets: ['latin'],
-  weight: ['400', '700'],
   variable: '--font-headline',
 });
 
