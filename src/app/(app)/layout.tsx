@@ -140,7 +140,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
               </div>
           </header>
-          <main className="p-6 lg:p-8 flex-1">{children}</main>
+          <main className="py-6 lg:py-8 flex-1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AuthGuard>
