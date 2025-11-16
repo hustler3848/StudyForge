@@ -58,7 +58,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <AuthGuard>
       <SidebarProvider>
-        <Sidebar collapsible="icon" side="left" variant="sidebar">
+        <Sidebar collapsible="icon" side="left">
           <SidebarHeader>
             <div className="flex items-center justify-between">
               <Logo />
