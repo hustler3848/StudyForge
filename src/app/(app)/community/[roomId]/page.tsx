@@ -22,7 +22,17 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Crown, User, Shield, HelpCircle, Loader2, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
+import {
+  Crown,
+  User,
+  Shield,
+  HelpCircle,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  BrainCircuit,
+} from "lucide-react";
+import { Cat, Dog, Rabbit, Fox, Panda, Bear } from 'iconoir-react';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { motion } from 'framer-motion';
 import { generateChallengeQuestion, evaluateChallengeAnswer } from '@/ai/flows/daily-challenge';
@@ -65,6 +75,21 @@ const rankIcons = [
     <Shield key="2" className="h-5 w-5 text-gray-400" />,
     <Shield key="3" className="h-5 w-5 text-yellow-600" />,
 ];
+
+const animalIcons = [Cat, Dog, Rabbit, Fox, Panda, Bear];
+
+// Simple hash function to pick a consistent icon for a user
+const getAnimalIcon = (name: string) => {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        const char = name.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    const index = Math.abs(hash) % animalIcons.length;
+    return animalIcons[index];
+};
+
 
 export default function RoomPage() {
     const { roomId } = useParams();
@@ -144,7 +169,7 @@ export default function RoomPage() {
                     }
 
                 }).catch(async (serverError) => {
-                    const permissionError = new FirestorePermissionError({ path: membersCollection.path, operation: 'list' });
+                    const permissionError = new FirestorePermissionError({ path: collection(firestore, `communityRooms/${roomId}/members`).path, operation: 'list' });
                     errorEmitter.emit('permission-error', permissionError);
                 }).finally(() => {
                     setIsLoading(false);
@@ -164,12 +189,10 @@ export default function RoomPage() {
 
 
     useEffect(() => {
-        if (!authLoading) {
-            const unsubscribe = fetchRoomData();
-            // This is not correct, fetchRoomData is async, it doesn't return unsubscribe
-            // However, the internal logic of fetchRoomData should handle this
+        if (!userLoading) {
+            fetchRoomData();
         }
-    }, [authLoading, user, fetchRoomData]);
+    }, [userLoading, user, fetchRoomData]);
 
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
@@ -209,14 +232,14 @@ export default function RoomPage() {
         });
     };
     
-    const handleSubmitAnswer = async (e: React.FormEvent) => {
+    const handleSubmitAnswer = (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !challenge || !answerText.trim()) return;
         setIsSubmitting(true);
         setEvalResult(null);
 
-        try {
-            const result = await evaluateChallengeAnswer({ question: challenge.question, answer: answerText });
+        evaluateChallengeAnswer({ question: challenge.question, answer: answerText })
+          .then(result => {
             setEvalResult(result);
 
             const answerCollectionRef = collection(firestore, `communityRooms/${roomId}/challenges/${challenge.id}/answers`);
@@ -240,12 +263,11 @@ export default function RoomPage() {
                 });
                 errorEmitter.emit('permission-error', permissionError);
               });
-
-        } catch (error) {
+        }).catch (error => {
             console.error("Error submitting answer:", error);
-        } finally {
+        }).finally(() => {
             setIsSubmitting(false);
-        }
+        });
     };
 
     const isUserInRoom = members.some(m => m.userId === user?.uid);
@@ -352,7 +374,9 @@ export default function RoomPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {members.map((member, index) => (
+                            {members.map((member, index) => {
+                                const AnimalIcon = getAnimalIcon(member.anonymousName);
+                                return (
                                 <TableRow key={member.userId} className={member.userId === user?.uid ? "bg-accent" : ""}>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center justify-center h-full">
@@ -361,13 +385,13 @@ export default function RoomPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
-                                            <User className="h-5 w-5" />
+                                            <AnimalIcon className="h-5 w-5" />
                                             <span>{member.anonymousName} {member.userId === user?.uid && "(You)"}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right font-bold">{member.studyStreak} days</TableCell>
                                 </TableRow>
-                            ))}
+                            )})}
                         </TableBody>
                     </Table>
                     {members.length === 0 && (
@@ -381,5 +405,3 @@ export default function RoomPage() {
         </motion.div>
     );
 }
-
-    
