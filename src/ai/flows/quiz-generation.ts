@@ -13,6 +13,9 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // INPUT SCHEMA
 const GenerateQuizInputSchema = z.object({
   topic: z.string().describe("The subject or topic for the quiz, e.g., 'Physics, Chapter 5: Thermodynamics'"),
+  numberOfQuestions: z.coerce.number().min(3).max(10).default(5),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard', 'Any']).default('Any'),
+  questionType: z.enum(['Theoretical', 'Numerical', 'Any']).default('Any'),
 });
 export type GenerateQuizInput = z.infer<typeof GenerateQuizInputSchema>;
 
@@ -21,12 +24,12 @@ const GenerateQuizOutputSchema = z.object({
   questions: z.array(
     z.object({
       questionText: z.string(),
-      options: z.array(z.string()).length(4),
-      correctAnswerIndex: z.number().min(0).max(3),
+      options: z.array(z.string()).min(4),
+      correctAnswerIndex: z.number().min(0),
       explanation: z.string().describe("A brief explanation of why the correct answer is right."),
       difficulty: z.enum(["Easy", "Medium", "Hard"]),
     })
-  ).length(5),
+  ).min(1),
 });
 export type GenerateQuizOutput = z.infer<typeof GenerateQuizOutputSchema>;
 
@@ -48,21 +51,20 @@ const generateQuizFlow = ai.defineFlow(
   async (input) => {
     const systemPrompt = `
 You are an AI that generates educational multiple-choice quizzes.
-Your task is to create a 5-question quiz based on the user-provided topic.
+Your task is to create a quiz based on the user-provided topic and constraints.
 
 RULES:
 - Return ONLY VALID JSON, no markdown or commentary.
 - The JSON object must contain a single key: "questions".
-- "questions" must be an array of EXACTLY 5 question objects.
+- "questions" must be an array of EXACTLY ${input.numberOfQuestions} question objects.
 - Each question object MUST have the following fields:
   - "questionText": The question itself (string).
-  - "options": An array of 4 possible answers (string[]).
+  - "options": An array of at least 4 possible answers (string[]).
   - "correctAnswerIndex": The index (0-3) of the correct answer in the "options" array (number).
   - "explanation": A concise reason why the correct answer is right (string).
-  - "difficulty": The question's difficulty, must be one of "Easy", "Medium", or "Hard" (string).
-
+  - "difficulty": The question's difficulty, must be one of "Easy", "Medium", or "Hard" (string). If the user requested 'Any', you can mix difficulties.
 - Ensure all fields are populated and valid.
-- The questions should be relevant to the provided topic.
+- The questions should be relevant to the provided topic, difficulty, and type.
 
 The JSON output MUST STRICTLY follow this structure:
 {
@@ -74,12 +76,18 @@ The JSON output MUST STRICTLY follow this structure:
       "explanation": "...",
       "difficulty": "Easy"
     },
-    ... (4 more questions)
+    ... (${input.numberOfQuestions - 1} more questions)
   ]
 }
 `;
 
-    const userPrompt = `Generate a 5-question quiz on the topic: "${input.topic}"`;
+    const userPrompt = `
+Generate a quiz with the following properties:
+- Topic: "${input.topic}"
+- Number of Questions: ${input.numberOfQuestions}
+- Difficulty: ${input.difficulty}
+- Question Type: ${input.questionType}
+`;
 
     const result = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -104,8 +112,8 @@ The JSON output MUST STRICTLY follow this structure:
     }
     
     // Basic validation and fallback
-    if (!parsed.questions || !Array.isArray(parsed.questions) || parsed.questions.length !== 5) {
-        throw new Error("AI failed to generate a valid 5-question quiz.");
+    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+        throw new Error(`AI failed to generate a valid quiz with ${input.numberOfQuestions} questions.`);
     }
 
     return GenerateQuizOutputSchema.parse(parsed);

@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { addDoc, collection, query, onSnapshot, orderBy } from 'firebase/firestore';
+import { firestore } from '@/firebase';
+import { useAuth } from '@/hooks/use-auth';
 import {
   Card,
   CardContent,
@@ -21,44 +24,49 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import {
   generateQuiz,
   type GenerateQuizOutput,
 } from '@/ai/flows/quiz-generation';
-import { Bot, Loader2, PartyPopper, RotateCw, ThumbsUp, XCircle } from 'lucide-react';
+import { Bot, Loader2, PartyPopper, RotateCw, ThumbsUp, XCircle, TableIcon, CalendarDays, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 
-const quizTopicSchema = z.object({
+const quizOptionsSchema = z.object({
   topic: z.string().min(3, 'Please enter a topic.'),
+  numberOfQuestions: z.coerce.number().min(3, 'Minimum 3 questions.').max(10, 'Maximum 10 questions.'),
+  difficulty: z.enum(['Any', 'Easy', 'Medium', 'Hard']),
+  questionType: z.enum(['Any', 'Theoretical', 'Numerical']),
 });
 
-type QuizTopicFormValues = z.infer<typeof quizTopicSchema>;
+type QuizOptionsFormValues = z.infer<typeof quizOptionsSchema>;
 type Question = GenerateQuizOutput['questions'][0];
+type QuizResult = {
+    id: string;
+    topic: string;
+    score: number;
+    totalQuestions: number;
+    createdAt: { seconds: number, nanoseconds: number } | Date;
+}
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-  },
-};
 
 export default function QuizPage() {
+  const { user } = useAuth();
   const [quiz, setQuiz] = useState<GenerateQuizOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,25 +74,51 @@ export default function QuizPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
+  const [pastQuizzes, setPastQuizzes] = useState<QuizResult[]>([]);
 
-  const form = useForm<QuizTopicFormValues>({
-    resolver: zodResolver(quizTopicSchema),
-    defaultValues: { topic: '' },
+  const form = useForm<QuizOptionsFormValues>({
+    resolver: zodResolver(quizOptionsSchema),
+    defaultValues: {
+      topic: '',
+      numberOfQuestions: 5,
+      difficulty: 'Any',
+      questionType: 'Any',
+    },
   });
 
-  async function onSubmit(data: QuizTopicFormValues) {
+  // Fetch past quizzes
+  useEffect(() => {
+    if (!user) return;
+    const quizzesCollectionRef = collection(firestore, `users/${user.uid}/quizzes`);
+    const q = query(quizzesCollectionRef, orderBy('createdAt', 'desc'));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const quizzes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as QuizResult));
+        setPastQuizzes(quizzes);
+    },
+    (error) => {
+        const permissionError = new FirestorePermissionError({
+            path: quizzesCollectionRef.path,
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        console.error("Error fetching quizzes:", error);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  async function onSubmit(data: QuizOptionsFormValues) {
     setIsLoading(true);
     setError(null);
     setQuiz(null);
     try {
-      const result = await generateQuiz({ topic: data.topic });
+      const result = await generateQuiz(data);
       setQuiz(result);
-      // Reset quiz state
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setIsAnswered(false);
       setScore(0);
-
     } catch (e) {
       console.error(e);
       setError('The AI failed to generate a quiz for this topic. Please try again.');
@@ -92,7 +126,7 @@ export default function QuizPage() {
       setIsLoading(false);
     }
   }
-  
+
   const handleAnswerSelect = (index: number) => {
     if (isAnswered) return;
     setSelectedAnswer(index);
@@ -103,6 +137,29 @@ export default function QuizPage() {
   };
 
   const handleNextQuestion = () => {
+    const isLastQuestion = currentQuestionIndex === (quiz?.questions.length ?? 0) - 1;
+    if (isLastQuestion) {
+        // Save the quiz result to Firestore
+        if (user && quiz) {
+            const quizData = {
+                topic: form.getValues('topic'),
+                score,
+                totalQuestions: quiz.questions.length,
+                questions: quiz.questions, // save the actual questions
+                createdAt: new Date(),
+            };
+            const quizzesCollectionRef = collection(firestore, `users/${user.uid}/quizzes`);
+            addDoc(quizzesCollectionRef, quizData)
+            .catch(serverError => {
+                const permissionError = new FirestorePermissionError({
+                  path: quizzesCollectionRef.path,
+                  operation: 'create',
+                  requestResourceData: quizData,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+            });
+        }
+    }
     setCurrentQuestionIndex(prev => prev + 1);
     setSelectedAnswer(null);
     setIsAnswered(false);
@@ -229,24 +286,18 @@ export default function QuizPage() {
   }
 
   return (
-    <motion.div 
-        className="max-w-xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-    >
-      <motion.div variants={itemVariants}>
+    <div className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle className="font-headline text-xl md:text-2xl">AI Quick Quiz</CardTitle>
             <CardDescription>
-              Enter any topic and our AI will generate a 5-question quiz to test your knowledge.
+              Enter any topic and our AI will generate a quiz to test your knowledge.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
+                 <FormField
                   control={form.control}
                   name="topic"
                   render={({ field }) => (
@@ -262,6 +313,62 @@ export default function QuizPage() {
                     </FormItem>
                   )}
                 />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="numberOfQuestions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel># of Questions</FormLabel>
+                           <FormControl>
+                            <Input type="number" min="3" max="10" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="difficulty"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Difficulty</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Any">Any</SelectItem>
+                                    <SelectItem value="Easy">Easy</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="Hard">Hard</SelectItem>
+                                </SelectContent>
+                            </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="questionType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Question Type</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="Any">Any</SelectItem>
+                                    <SelectItem value="Theoretical">Theoretical</SelectItem>
+                                    <SelectItem value="Numerical">Numerical</SelectItem>
+                                </SelectContent>
+                            </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating Quiz...</>
@@ -273,7 +380,37 @@ export default function QuizPage() {
             </Form>
           </CardContent>
         </Card>
-      </motion.div>
-    </motion.div>
+
+        {pastQuizzes.length > 0 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-xl md:text-2xl">Quiz History</CardTitle>
+                    <CardDescription>Review your past quiz performances.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Topic</TableHead>
+                                <TableHead>Score</TableHead>
+                                <TableHead className="text-right">Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {pastQuizzes.map(q => (
+                                <TableRow key={q.id}>
+                                    <TableCell className="font-medium">{q.topic}</TableCell>
+                                    <TableCell>{q.score} / {q.totalQuestions}</TableCell>
+                                    <TableCell className="text-right text-muted-foreground">
+                                        {format(q.createdAt instanceof Date ? q.createdAt : new Date(q.createdAt.seconds * 1000), 'MMM d, yyyy')}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        )}
+    </div>
   );
 }
