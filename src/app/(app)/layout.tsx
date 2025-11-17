@@ -86,7 +86,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           
           <div className={cn(
               "flex-1 flex flex-col transition-all duration-300 ease-in-out",
-              isSidebarCollapsed ? "md:ml-20" : "md:ml-60"
+              isSidebarCollapsed ? "ml-0 md:ml-20" : "ml-0 md:ml-60"
           )}>
             <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
                 <Sheet>

@@ -70,7 +70,7 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
     return (
         <TooltipProvider delayDuration={0}>
             <aside className={cn(
-                "hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out fixed h-full z-50",
+                "hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out fixed h-full z-40",
                 isCollapsed ? "w-20" : "w-60"
             )}>
                 <div className="h-16 flex items-center border-b px-6">
