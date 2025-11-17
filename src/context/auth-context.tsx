@@ -5,12 +5,22 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AppUser } from '@/lib/types';
 import { auth, firestore } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut, User, onAuthStateChanged } from 'firebase/auth';
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  User, 
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AuthContextType {
   user: AppUser | null;
   loading: boolean;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (profileData: Partial<AppUser>) => Promise<void>;
@@ -22,65 +32,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const handleUser = async (firebaseUser: User | null) => {
+    if (firebaseUser) {
+      const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
+      const docSnap = await getDoc(userDocRef);
+      if (docSnap.exists()) {
+        setUser(docSnap.data() as AppUser);
+      } else {
+        // This is a new user, create their document
+        const newAppUser: AppUser = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'New User',
+          photoURL: firebaseUser.photoURL,
+          profileComplete: false, // Force new users to onboard
+        };
+        await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp() });
+        setUser(newAppUser);
+      }
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  };
   
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
-      if (firebaseUser) {
-        const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          setUser(docSnap.data() as AppUser);
-        } else {
-           // This case is for a brand new user.
-           const newAppUser: AppUser = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-              displayName: firebaseUser.displayName,
-              photoURL: firebaseUser.photoURL,
-              profileComplete: true, // Bypass onboarding as requested
-           };
-           await setDoc(userDocRef, { ...newAppUser, createdAt: serverTimestamp() });
-           setUser(newAppUser);
-        }
-      } else {
-        setUser(null);
-      }
+    setLoading(true);
+    const unsubscribe = onAuthStateChanged(auth, handleUser);
+    return () => {
+      unsubscribe();
       setLoading(false);
-    });
-
-    return () => unsubscribe();
+    }
   }, []);
   
+  const signInWithEmail = async (email: string, password: string) => {
+    setLoading(true);
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will handle the rest
+  };
+  
+  const signUpWithEmail = async (email: string, password: string) => {
+    setLoading(true);
+    await createUserWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will handle the rest
+  };
+
   const signInWithGoogle = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      // The onAuthStateChanged listener will handle the rest.
-      // After it runs, the AuthGuard will redirect to the dashboard.
-    } catch (error) {
-      console.error("Error during Google sign-in:", error);
-      // Let the onAuthStateChanged listener handle setting user to null
-      setLoading(false);
-    }
+    await signInWithPopup(auth, provider);
+    // onAuthStateChanged will handle the rest
   };
 
   const logout = async () => {
     await signOut(auth);
     setUser(null);
+    setLoading(false);
     router.push('/login');
   };
 
   const updateUserProfile = async (profileData: Partial<AppUser>) => {
     if (user) {
+      setLoading(true);
       const userDocRef = doc(firestore, `users/${user.uid}`);
       await setDoc(userDocRef, profileData, { merge: true });
       setUser(prevUser => prevUser ? { ...prevUser, ...profileData } : null);
+      setLoading(false);
     }
   };
 
-  const value = { user, loading, signInWithGoogle, logout, updateUserProfile };
+  const value = { user, loading, signInWithEmail, signUpWithEmail, signInWithGoogle, logout, updateUserProfile };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

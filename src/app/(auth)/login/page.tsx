@@ -26,6 +26,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useState } from "react";
 
 function GoogleIcon() {
   return (
@@ -58,16 +60,31 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>;
 
 export default function LoginPage() {
-  const { signInWithGoogle, loading } = useAuth();
+  const { signInWithEmail, signInWithGoogle, loading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  // Since email/password auth is not implemented, this is a placeholder
-  function onSubmit(data: SignInFormValues) {
-    console.log("Email/password login not implemented.", data);
+  async function onSubmit(data: SignInFormValues) {
+    setError(null);
+    try {
+      await signInWithEmail(data.email, data.password);
+    } catch (error: any) {
+      switch (error.code) {
+        case 'auth/user-not-found':
+          setError('No account found with this email address.');
+          break;
+        case 'auth/wrong-password':
+          setError('Incorrect password. Please try again.');
+          break;
+        default:
+          setError('An unexpected error occurred. Please try again.');
+          break;
+      }
+    }
   }
 
   return (
@@ -84,6 +101,11 @@ export default function LoginPage() {
         <CardContent className="space-y-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -115,8 +137,9 @@ export default function LoginPage() {
                 className={cn(
                   "w-full text-white font-bold bg-gradient-to-r from-indigo-500 to-blue-400 hover:from-indigo-600 hover:to-blue-500"
                 )}
+                disabled={loading}
               >
-                Login
+                {loading ? 'Logging In...' : 'Login'}
               </Button>
             </form>
           </Form>

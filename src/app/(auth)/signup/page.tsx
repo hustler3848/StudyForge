@@ -25,6 +25,8 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function GoogleIcon() {
   return (
@@ -63,16 +65,26 @@ const signUpSchema = z
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export default function SignUpPage() {
-  const { signInWithGoogle, loading } = useAuth();
+  const { signUpWithEmail, signInWithGoogle, loading } = useAuth();
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
-  // Since email/password auth is not implemented, this is a placeholder
-  function onSubmit(data: SignUpFormValues) {
-    console.log("Email/password signup not implemented", data);
+  async function onSubmit(data: SignUpFormValues) {
+    setError(null);
+    try {
+      await signUpWithEmail(data.email, data.password);
+      // The auth guard will handle redirection
+    } catch (error: any) {
+      if (error.code === 'auth/email-already-in-use') {
+        setError('This email address is already in use.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+    }
   }
 
   return (
@@ -91,6 +103,11 @@ export default function SignUpPage() {
         <CardContent className="space-y-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -135,8 +152,9 @@ export default function SignUpPage() {
                 className={cn(
                   "w-full text-white font-bold bg-gradient-to-r from-indigo-500 to-blue-400 hover:from-indigo-600 hover:to-blue-500"
                 )}
+                disabled={loading}
               >
-                Create Account
+                {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
           </Form>
