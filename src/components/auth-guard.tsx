@@ -12,22 +12,20 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      // If not loading and no user, redirect to signin
-      if (pathname !== '/signin' && pathname !== '/signup') {
-        router.push('/signin');
-      }
+    if (loading) {
+      return; // Do nothing while loading
     }
-    
-    if (!loading && user) {
-        // If user profile is not complete, redirect to onboarding
-        if (!user.profileComplete && pathname !== '/onboarding') {
-            router.push('/onboarding');
-        }
-        // If profile is complete but they are on an auth or onboarding page, redirect to dashboard
-        else if (user.profileComplete && (pathname === '/onboarding' || pathname === '/signin' || pathname === '/signup')) {
-            router.push('/dashboard');
-        }
+
+    const isAuthPage = pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/login');
+
+    if (!user && !isAuthPage) {
+      router.push('/login');
+    } else if (user) {
+      if (!user.profileComplete && pathname !== '/onboarding') {
+        router.push('/onboarding');
+      } else if (user.profileComplete && (isAuthPage || pathname === '/onboarding')) {
+        router.push('/dashboard');
+      }
     }
   }, [user, loading, router, pathname]);
   
@@ -38,26 +36,26 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-
-  // If we are on an auth page, and we are not logged in, render the page.
-  if (!user && (pathname === '/signin' || pathname === '/signup')) {
-      return <>{children}</>;
+  
+  const isAuthPage = pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/login');
+  
+  // Render children if rules are met, otherwise render skeleton while redirecting
+  if (!user && isAuthPage) {
+    return <>{children}</>;
   }
   
-  // If we have a user and they are on the right page, render children
-  if (user) {
-    if (!user.profileComplete && pathname === '/onboarding') {
-        return <>{children}</>;
-    }
-    if (user.profileComplete && pathname !== '/onboarding' && pathname !== '/signin' && pathname !== '/signup') {
-        return <>{children}</>;
-    }
+  if (user && !user.profileComplete && pathname === '/onboarding') {
+    return <>{children}</>;
+  }
+  
+  if (user && user.profileComplete && !isAuthPage && pathname !== '/onboarding') {
+    return <>{children}</>;
   }
 
-  // Fallback while routing takes place
+  // Fallback skeleton while routing logic catches up
   return (
-      <div className="p-4 sm:p-6">
-        <DashboardSkeleton />
-      </div>
-    );
+    <div className="p-4 sm:p-6">
+      <DashboardSkeleton />
+    </div>
+  );
 }

@@ -56,7 +56,7 @@ const signInSchema = z.object({
 
 type SignInFormValues = z.infer<typeof signInSchema>;
 
-export default function SignInPage() {
+export default function LoginPage() {
   const { signInWithGoogle, loading } = useAuth();
   
   const form = useForm<SignInFormValues>({
