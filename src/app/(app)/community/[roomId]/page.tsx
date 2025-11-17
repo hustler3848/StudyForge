@@ -13,16 +13,22 @@ import {
     setDoc,
     serverTimestamp,
     runTransaction,
-    increment
+    increment,
+    addDoc,
+    where
 } from 'firebase/firestore';
 import { firestore } from '@/firebase';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Crown, User, Shield, Cat, Dog, Rabbit, Fox, Bear, Panda, Koala, Tiger, Lion } from 'lucide-react';
+import { Crown, User, Shield, Cat, Dog, Rabbit, Fox, Bear, Panda, Koala, Tiger, Lion, HelpCircle, Loader2, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { motion } from 'framer-motion';
+import { generateChallengeQuestion, evaluateChallengeAnswer } from '@/ai/flows/daily-challenge';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { format } from 'date-fns';
 
 interface RoomMember {
     userId: string;
@@ -36,6 +42,19 @@ interface RoomDetails {
     description: string;
 }
 
+interface DailyChallenge {
+    id: string;
+    question: string;
+}
+
+interface ChallengeAnswer {
+    id: string;
+    userId: string;
+    answer: string;
+    isCorrect: boolean;
+    feedback: string;
+}
+
 const rankIcons = [
     <Crown key="1" className="h-5 w-5 text-yellow-400" />,
     <Shield key="2" className="h-5 w-5 text-gray-400" />,
@@ -45,7 +64,6 @@ const rankIcons = [
 const animalIcons = [Cat, Dog, Rabbit, Fox, Bear, Panda, Koala, Tiger, Lion];
 
 const getAnimalIcon = (name: string) => {
-    // A simple hash function to pick an icon
     const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const Icon = animalIcons[hash % animalIcons.length];
     return <Icon className="h-5 w-5" />;
@@ -60,9 +78,18 @@ export default function RoomPage() {
     const [members, setMembers] = useState<RoomMember[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isJoining, setIsJoining] = useState(false);
+    
+    // Daily Challenge State
+    const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
+    const [userAnswer, setUserAnswer] = useState<ChallengeAnswer | null>(null);
+    const [answerText, setAnswerText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [evalResult, setEvalResult] = useState<{isCorrect: boolean, feedback: string} | null>(null);
+    const today = format(new Date(), 'yyyy-MM-dd');
 
     useEffect(() => {
-        if (!roomId) return;
+        if (!roomId || !user) return;
+        
         const fetchRoomData = async () => {
             setIsLoading(true);
             try {
@@ -72,7 +99,7 @@ export default function RoomPage() {
                 if (roomSnap.exists()) {
                     setRoomDetails({ id: roomSnap.id, ...roomSnap.data() } as RoomDetails);
                 } else {
-                    router.push('/community'); // Room not found
+                    router.push('/community');
                     return;
                 }
 
@@ -80,8 +107,31 @@ export default function RoomPage() {
                 const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
                 const q = query(membersCollection, orderBy('studyStreak', 'desc'));
                 const membersSnap = await getDocs(q);
-                const membersData = membersSnap.docs.map(doc => doc.data() as RoomMember);
-                setMembers(membersData);
+                setMembers(membersSnap.docs.map(doc => doc.data() as RoomMember));
+                
+                // Fetch or create daily challenge
+                const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
+                const challengeSnap = await getDoc(challengeDocRef);
+                if (challengeSnap.exists()) {
+                    setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
+                } else {
+                    const { question } = await generateChallengeQuestion(roomSnap.data().name);
+                    await setDoc(challengeDocRef, { question, roomId });
+                    setChallenge({ id: today, question });
+                }
+
+                // Fetch user's answer for today
+                if (user) {
+                    const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
+                    const answerQuery = query(answersCollection, where("userId", "==", user.uid));
+                    const answerSnap = await getDocs(answerQuery);
+                    if (!answerSnap.empty) {
+                        const doc = answerSnap.docs[0];
+                        setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
+                    }
+
+                }
+
 
             } catch (error) {
                 console.error("Error fetching room data:", error);
@@ -90,7 +140,7 @@ export default function RoomPage() {
             }
         };
         fetchRoomData();
-    }, [roomId, router]);
+    }, [roomId, user, router, today]);
 
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
@@ -101,38 +151,47 @@ export default function RoomPage() {
 
             await runTransaction(firestore, async (transaction) => {
                 const memberDoc = await transaction.get(memberDocRef);
-
-                if (memberDoc.exists()) {
-                    // Already a member, maybe update streak
-                    transaction.update(memberDocRef, { studyStreak: user.studyStreak || 0 });
-                } else {
-                    // New member
-                    const anonymousName: string = uniqueNamesGenerator({
-                        dictionaries: [adjectives, animals],
-                        separator: ' ',
-                        style: 'capital',
-                    });
-
-                    const newMember: RoomMember = {
-                        userId: user.uid,
-                        anonymousName,
-                        studyStreak: user.studyStreak || 0,
-                    };
-                    
+                if (!memberDoc.exists()) {
+                    const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
+                    const newMember: RoomMember = { userId: user.uid, anonymousName, studyStreak: user.studyStreak || 0 };
                     transaction.set(memberDocRef, { ...newMember, joinedAt: serverTimestamp() });
                     transaction.update(roomDocRef, { memberCount: increment(1) });
-                    
-                    // Add to local state immediately
                     setMembers(prev => [...prev, newMember].sort((a, b) => b.studyStreak - a.studyStreak));
                 }
             });
-
         } catch (error) {
             console.error("Error joining room:", error);
         } finally {
             setIsJoining(false);
         }
     };
+    
+    const handleSubmitAnswer = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user || !challenge || !answerText) return;
+        setIsSubmitting(true);
+        setEvalResult(null);
+        try {
+            const result = await evaluateChallengeAnswer({ question: challenge.question, answer: answerText });
+            setEvalResult(result);
+
+            const answerCollectionRef = collection(firestore, `communityRooms/${roomId}/challenges/${challenge.id}/answers`);
+            const newAnswer: Omit<ChallengeAnswer, 'id'> = {
+                userId: user.uid,
+                answer: answerText,
+                isCorrect: result.isCorrect,
+                feedback: result.feedback,
+            };
+            const docRef = await addDoc(answerCollectionRef, { ...newAnswer, submittedAt: serverTimestamp() });
+            setUserAnswer({ ...newAnswer, id: docRef.id });
+
+        } catch (error) {
+            console.error("Error submitting answer:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
     const isUserInRoom = members.some(m => m.userId === user?.uid);
 
@@ -146,9 +205,7 @@ export default function RoomPage() {
         )
     }
 
-    if (!roomDetails) {
-        return <div>Room not found.</div>;
-    }
+    if (!roomDetails) { return <div>Room not found.</div>; }
 
     return (
         <motion.div 
@@ -169,6 +226,61 @@ export default function RoomPage() {
                     </CardContent>
                 )}
             </Card>
+
+            {/* Daily Challenge Card */}
+            {isUserInRoom && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><HelpCircle className="text-primary"/> Daily Challenge</CardTitle>
+                        <CardDescription>Test your knowledge with today's question.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {challenge ? (
+                            <div className="space-y-4">
+                                <p className="font-semibold text-lg bg-secondary p-4 rounded-md">{challenge.question}</p>
+                                {userAnswer ? (
+                                    <Alert variant={userAnswer.isCorrect ? 'default' : 'destructive'} className={userAnswer.isCorrect ? "border-green-500/50" : ""}>
+                                        <AlertTitle className="flex items-center gap-2">
+                                            {userAnswer.isCorrect ? <CheckCircle className="text-green-500" /> : <XCircle />}
+                                            Evaluation Complete
+                                        </AlertTitle>
+                                        <AlertDescription>
+                                            <p className="font-bold mb-2">Your Answer: "{userAnswer.answer}"</p>
+                                            {userAnswer.feedback}
+                                        </AlertDescription>
+                                    </Alert>
+                                ) : evalResult ? (
+                                     <Alert variant={evalResult.isCorrect ? 'default' : 'destructive'} className={evalResult.isCorrect ? "border-green-500/50" : ""}>
+                                        <AlertTitle className="flex items-center gap-2">
+                                            {evalResult.isCorrect ? <CheckCircle className="text-green-500" /> : <XCircle />}
+                                            Evaluation Complete
+                                        </AlertTitle>
+                                        <AlertDescription>{evalResult.feedback}</AlertDescription>
+                                    </Alert>
+                                ) : (
+                                    <form onSubmit={handleSubmitAnswer} className="space-y-4">
+                                        <Textarea 
+                                            value={answerText}
+                                            onChange={(e) => setAnswerText(e.target.value)}
+                                            placeholder="Type your answer here..."
+                                            disabled={isSubmitting}
+                                        />
+                                        <Button type="submit" disabled={isSubmitting}>
+                                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                                            Submit Answer
+                                        </Button>
+                                    </form>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted-foreground p-8">
+                                <BrainCircuit className="h-10 w-10 mx-auto mb-2 animate-pulse"/>
+                                <p>Generating today's challenge...</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader>
@@ -205,7 +317,7 @@ export default function RoomPage() {
                     </Table>
                     {members.length === 0 && (
                         <div className="text-center text-muted-foreground p-8">
-                            <Users className="h-10 w-10 mx-auto mb-2" />
+                            <User className="h-10 w-10 mx-auto mb-2" />
                             <p>This room is empty. Be the first to join!</p>
                         </div>
                     )}
@@ -214,5 +326,3 @@ export default function RoomPage() {
         </motion.div>
     );
 }
-
-    

@@ -324,6 +324,34 @@
         "studyStreak",
         "joinedAt"
       ]
+    },
+    "DailyChallenge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DailyChallenge",
+      "type": "object",
+      "description": "Represents a daily question challenge within a community room.",
+      "properties": {
+        "id": { "type": "string", "description": "The date of the challenge, in YYYY-MM-DD format." },
+        "roomId": { "type": "string", "description": "The ID of the community room this challenge belongs to." },
+        "question": { "type": "string", "description": "The text of the challenge question." }
+      },
+      "required": ["id", "roomId", "question"]
+    },
+    "ChallengeAnswer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChallengeAnswer",
+      "type": "object",
+      "description": "Represents a user's answer to a daily challenge.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the answer." },
+        "challengeId": { "type": "string", "description": "The ID of the challenge being answered (YYYY-MM-DD)." },
+        "userId": { "type": "string", "description": "The ID of the user who submitted the answer." },
+        "answer": { "type": "string", "description": "The user's submitted answer text." },
+        "isCorrect": { "type": "boolean", "description": "Whether the AI evaluated the answer as correct." },
+        "feedback": { "type": "string", "description": "Feedback provided by the AI." },
+        "submittedAt": { "type": "string", "format": "date-time", "description": "Timestamp of submission." }
+      },
+      "required": ["id", "challengeId", "userId", "answer", "isCorrect", "submittedAt"]
     }
   },
   "auth": {
@@ -481,10 +509,33 @@
             }
           ]
         }
+      },
+       {
+        "path": "/communityRooms/{roomId}/challenges/{challengeId}",
+        "definition": {
+          "entityName": "DailyChallenge",
+          "schema": { "$ref": "#/backend/entities/DailyChallenge" },
+          "description": "Stores the daily challenge question for a specific room.",
+          "params": [
+            { "name": "roomId", "description": "The ID of the community room." },
+            { "name": "challengeId", "description": "The date of the challenge (YYYY-MM-DD)." }
+          ]
+        }
+      },
+      {
+        "path": "/communityRooms/{roomId}/challenges/{challengeId}/answers/{answerId}",
+        "definition": {
+          "entityName": "ChallengeAnswer",
+          "schema": { "$ref": "#/backend/entities/ChallengeAnswer" },
+          "description": "Stores a user's answer to a daily challenge.",
+          "params": [
+            { "name": "roomId", "description": "The ID of the community room." },
+            { "name": "challengeId", "description": "The date of the challenge (YYYY-MM-DD)." },
+            { "name": "answerId", "description": "The unique ID for the user's answer." }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations. The new CommunityRooms feature follows this pattern, with a top-level collection for public room data and a sub-collection for member data, allowing for efficient leaderboard queries."
+    "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations. The new CommunityRooms feature follows this pattern, with a top-level collection for public room data and a sub-collection for member data, allowing for efficient leaderboard queries. The new Daily Challenge feature is nested under community rooms to associate challenges with specific topics, and answers are nested under challenges, creating a clear relational hierarchy."
   }
 }
-
-    
