@@ -76,10 +76,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <div className="flex min-h-screen">
           <Sidebar>
-            <SidebarHeader className='p-4'>
+            <SidebarHeader className='p-4 flex items-center justify-between'>
               <Logo />
+              <SidebarToggleButton />
             </SidebarHeader>
-            <SidebarToggleButton />
             <SidebarContent>
               <SidebarMenu>
                 {navItems.map((item) => (

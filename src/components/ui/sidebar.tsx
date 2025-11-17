@@ -22,7 +22,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
+const SIDEBAR_WIDTH = "17rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "4rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
@@ -223,7 +223,7 @@ const Sidebar = React.forwardRef<
            variant === 'floating' && 'm-2 rounded-lg border shadow',
            variant === 'floating' && state === 'collapsed' && 'm-2 w-[calc(var(--sidebar-width-icon)_+_1rem)]',
            variant === 'floating' && state === 'expanded' && 'w-[calc(var(--sidebar-width)_+_1rem)]',
-           "relative",
+           "relative bg-sidebar",
            className
         )}
         data-state={state}
@@ -251,16 +251,15 @@ const SidebarToggleButton = React.forwardRef<
       variant="ghost"
       size="icon"
       className={cn(
-        "absolute top-1/2 -translate-y-1/2 rounded-full h-8 w-8 bg-background border shadow-md hover:bg-accent z-50",
-        "right-0 translate-x-1/2",
-        "group-data-[side=right]/sidebar-wrapper:left-0 group-data-[side=right]/sidebar-wrapper:-translate-x-1/2",
-        "group-data-[state=expanded]/sidebar-wrapper:rotate-180",
+        "rounded-md h-8 w-8",
+        "transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0",
+        "group-data-[state=collapsed]/sidebar-wrapper:opacity-100",
          "hidden md:inline-flex"
       )}
       onClick={toggleSidebar}
       {...props}
     >
-      <ChevronLeft className="h-4 w-4" />
+      <PanelLeft className="h-5 w-5" />
     </Button>
   )
 })
@@ -411,7 +410,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "relative flex flex-1 min-h-0 flex-col gap-2 group-data-[collapsible=icon]:overflow-visible p-4",
+        "relative flex flex-1 min-h-0 flex-col gap-4 group-data-[collapsible=icon]:overflow-visible p-2",
         className
       )}
       {...props}
@@ -528,7 +527,7 @@ const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
-        default: "h-10 text-sm",
+        default: "h-10 text-sm font-medium",
         sm: "h-8 text-xs",
         lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
       },
