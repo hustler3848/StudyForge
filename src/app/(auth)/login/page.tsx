@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 function GoogleIcon() {
   return (
@@ -106,85 +107,98 @@ export default function LoginPage() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full"
+      className="w-full max-w-4xl"
     >
-      <Card className="w-full max-w-sm mx-auto shadow-lg">
-        <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your study tools.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="name@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button
-                type="submit"
-                className={cn(
-                  "w-full text-white font-bold bg-gradient-to-r from-indigo-500 to-blue-400 hover:from-indigo-600 hover:to-blue-500"
-                )}
-                disabled={loading}
-              >
-                {loading ? 'Logging In...' : 'Login'}
-              </Button>
-            </form>
-          </Form>
-           <div className="space-y-4">
-            <div className="text-center text-sm">
-                <p>Don't have an account? <Link href="/signup" className="font-medium text-primary hover:underline">Sign up</Link></p>
-            </div>
+      <Card className="w-full grid md:grid-cols-2 shadow-lg overflow-hidden">
+        <div className="relative hidden md:block">
+          <Image
+            src="https://picsum.photos/seed/login/800/1200"
+            alt="Students studying in a library"
+            width={800}
+            height={1200}
+            className="h-full w-full object-cover"
+            data-ai-hint="library study"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        </div>
+        <div className="p-6 sm:p-8 flex flex-col justify-center">
+            <CardHeader className="text-center p-0 mb-6">
+              <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+              <CardDescription>Sign in to access your study tools.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0 space-y-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="name@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className={cn(
+                      "w-full text-white font-bold bg-gradient-to-r from-indigo-500 to-blue-400 hover:from-indigo-600 hover:to-blue-500"
+                    )}
+                    disabled={loading}
+                  >
+                    {loading ? 'Logging In...' : 'Login'}
+                  </Button>
+                </form>
+              </Form>
+              <div className="space-y-4">
+                <div className="text-center text-sm">
+                    <p>Don't have an account? <Link href="/signup" className="font-medium text-primary hover:underline">Sign up</Link></p>
+                </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-            >
-              <GoogleIcon />
-              Sign in with Google
-            </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                >
+                  <GoogleIcon />
+                  Sign in with Google
+                </Button>
+              </div>
+            </CardContent>
           </div>
-        </CardContent>
       </Card>
     </motion.div>
   );

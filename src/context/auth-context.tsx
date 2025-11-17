@@ -12,7 +12,8 @@ import {
   User, 
   onAuthStateChanged,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -38,7 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
-        setUser(docSnap.data() as AppUser);
+        setUser({
+          uid: firebaseUser.uid,
+          ...docSnap.data(),
+        } as AppUser);
       } else {
         // This is a new user, create their document
         const newAppUser: AppUser = {
@@ -71,8 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const signUpWithEmail = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
-    // onAuthStateChanged will handle creating the user doc
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged will handle creating the Firestore user doc
   };
 
   const signInWithGoogle = async () => {
@@ -88,10 +92,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateUserProfile = async (profileData: Partial<AppUser>) => {
-    if (user) {
-      const userDocRef = doc(firestore, `users/${user.uid}`);
-      await setDoc(userDocRef, profileData, { merge: true });
-      setUser(prevUser => prevUser ? { ...prevUser, ...profileData } : null);
+    if (user && auth.currentUser) {
+        // Update Firebase Auth profile (for things like displayName)
+        if (profileData.displayName) {
+            await updateProfile(auth.currentUser, { displayName: profileData.displayName });
+        }
+
+        // Update Firestore document
+        const userDocRef = doc(firestore, `users/${user.uid}`);
+        await setDoc(userDocRef, profileData, { merge: true });
+
+        // Update local state
+        setUser(prevUser => prevUser ? { ...prevUser, ...profileData } : null);
     }
   };
 

@@ -165,7 +165,7 @@ export default function DashboardPage() {
     >
       <motion.div variants={itemVariants}>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
-          Welcome back, {user?.displayName?.split(" ")[0] || "Student"}!
+          Welcome back, {user?.displayName || "Student"}!
         </h1>
         <p className="text-muted-foreground mt-2">
           Ready to have a productive day? Let's get started.

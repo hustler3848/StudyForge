@@ -1,12 +1,11 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -35,8 +34,10 @@ import { Logo } from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { updateProfile } from "firebase/auth";
 
 const onboardingSchema = z.object({
+  displayName: z.string().min(2, "Please enter your full name."),
   gradeLevel: z.string().min(1, "Please select your grade level."),
   subjects: z.array(z.string()).min(1, "Please add at least one subject."),
   weeklyFreeHours: z.coerce
@@ -63,12 +64,13 @@ const gradeLevels = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, loading } = useAuth();
   const [subjectInput, setSubjectInput] = useState("");
 
   const form = useForm<OnboardingFormValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      displayName: user?.displayName || "",
       gradeLevel: "",
       subjects: [],
       weeklyFreeHours: 10,
@@ -91,16 +93,27 @@ export default function OnboardingPage() {
     );
   };
 
-  function onSubmit(data: OnboardingFormValues) {
+  async function onSubmit(data: OnboardingFormValues) {
     if (!user) return;
-
-    updateUserProfile({ profileComplete: true, profile: data });
+    
+    // This is a Firestore update for our app's user data
+    const profileDataForFirestore = {
+        displayName: data.displayName,
+        profile: {
+            gradeLevel: data.gradeLevel,
+            subjects: data.subjects,
+            weeklyFreeHours: data.weeklyFreeHours,
+        },
+        profileComplete: true,
+    };
+    
+    await updateUserProfile(profileDataForFirestore);
     router.push("/dashboard");
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-4">
-      <Card className="w-full max-w-lg">
+    <div className="flex min-h-screen w-full items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
             <Logo />
@@ -115,6 +128,20 @@ export default function OnboardingPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Jane Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="gradeLevel"
@@ -205,8 +232,8 @@ export default function OnboardingPage() {
                 )}
               />
 
-              <Button type="submit" className="w-full" size="lg">
-                Let's Get Started
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading ? "Saving..." : "Let's Get Started"}
               </Button>
             </form>
           </Form>
