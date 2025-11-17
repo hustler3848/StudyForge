@@ -96,64 +96,78 @@ export default function RoomPage() {
         if (!roomId || userLoading) return;
         
         setIsLoading(true);
-        try {
-            // Fetch room details
-            const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
-            const roomSnap = await getDoc(roomDocRef);
+
+        const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
+        getDoc(roomDocRef).then(roomSnap => {
             if (roomSnap.exists()) {
-                setRoomDetails({ id: roomSnap.id, ...roomSnap.data() } as RoomDetails);
+                const roomData = { id: roomSnap.id, ...roomSnap.data() } as RoomDetails;
+                setRoomDetails(roomData);
+
+                // Now fetch members
+                const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
+                const q = query(membersCollection, orderBy('studyStreak', 'desc'));
+                getDocs(q).then(membersSnap => {
+                    const memberData = membersSnap.docs.map(doc => doc.data() as RoomMember);
+                    setMembers(memberData);
+
+                    const isUserMember = user ? memberData.some(m => m.userId === user.uid) : false;
+                    if (user && isUserMember) {
+                        // Fetch or create daily challenge
+                        const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
+                        getDoc(challengeDocRef).then(challengeSnap => {
+                             if (challengeSnap.exists()) {
+                                setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
+                            } else if (roomData.name) {
+                                generateChallengeQuestion(roomData.name).then(({ question }) => {
+                                    const newChallenge = { question, roomId, createdAt: serverTimestamp() };
+                                    setDoc(challengeDocRef, newChallenge)
+                                    .catch(async (serverError) => {
+                                        const permissionError = new FirestorePermissionError({
+                                        path: challengeDocRef.path,
+                                        operation: 'create',
+                                        requestResourceData: newChallenge,
+                                        });
+                                        errorEmitter.emit('permission-error', permissionError);
+                                    });
+                                    setChallenge({ id: today, question });
+                                });
+                            }
+                        }).catch(async (serverError) => {
+                             const permissionError = new FirestorePermissionError({ path: challengeDocRef.path, operation: 'get' });
+                             errorEmitter.emit('permission-error', permissionError);
+                        });
+
+                        // Fetch user's answer for today
+                        const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
+                        const answerQuery = query(answersCollection, where("userId", "==", user.uid));
+                        getDocs(answerQuery).then(answerSnap => {
+                            if (!answerSnap.empty) {
+                                const doc = answerSnap.docs[0];
+                                setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
+                            }
+                        }).catch(async (serverError) => {
+                             const permissionError = new FirestorePermissionError({ path: answersCollection.path, operation: 'list' });
+                             errorEmitter.emit('permission-error', permissionError);
+                        });
+                    }
+
+                }).catch(async (serverError) => {
+                    const permissionError = new FirestorePermissionError({ path: membersCollection.path, operation: 'list' });
+                    errorEmitter.emit('permission-error', permissionError);
+                }).finally(() => {
+                    setIsLoading(false);
+                });
+
             } else {
                 router.push('/community');
                 return;
             }
-
-            // Fetch room members (leaderboard)
-            const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
-            const q = query(membersCollection, orderBy('studyStreak', 'desc'));
-            const membersSnap = await getDocs(q);
-            const memberData = membersSnap.docs.map(doc => doc.data() as RoomMember);
-            setMembers(memberData);
-            
-            const isUserMember = user ? memberData.some(m => m.userId === user.uid) : false;
-
-            if (user && isUserMember) {
-                // Fetch or create daily challenge
-                const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
-                const challengeSnap = await getDoc(challengeDocRef);
-                
-                if (challengeSnap.exists()) {
-                    setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
-                } else if (roomSnap.data().name) {
-                    const { question } = await generateChallengeQuestion(roomSnap.data().name);
-                    const newChallenge = { question, roomId, createdAt: serverTimestamp() };
-                    
-                    setDoc(challengeDocRef, newChallenge)
-                      .catch(async (serverError) => {
-                        const permissionError = new FirestorePermissionError({
-                          path: challengeDocRef.path,
-                          operation: 'create',
-                          requestResourceData: newChallenge,
-                        });
-                        errorEmitter.emit('permission-error', permissionError);
-                      });
-                    
-                    setChallenge({ id: today, question });
-                }
-
-                // Fetch user's answer for today
-                const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
-                const answerQuery = query(answersCollection, where("userId", "==", user.uid));
-                const answerSnap = await getDocs(answerQuery);
-                if (!answerSnap.empty) {
-                    const doc = answerSnap.docs[0];
-                    setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching room data:", error);
-        } finally {
+        }).catch(async (serverError) => {
+            const permissionError = new FirestorePermissionError({ path: roomDocRef.path, operation: 'get' });
+            errorEmitter.emit('permission-error', permissionError);
             setIsLoading(false);
-        }
+        });
+
     }, [roomId, user, userLoading, router, today]);
 
 
@@ -196,7 +210,6 @@ export default function RoomPage() {
                 requestResourceData: newMember,
             });
             errorEmitter.emit('permission-error', permissionError);
-            console.error("Error joining room:", serverError);
         }).finally(() => {
             setIsJoining(false);
         });
@@ -376,5 +389,3 @@ export default function RoomPage() {
         </motion.div>
     );
 }
-
-    
