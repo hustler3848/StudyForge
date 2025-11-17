@@ -1,5 +1,4 @@
 
-
 export type UserProfile = {
   gradeLevel: string;
   subjects: string[];
@@ -8,14 +7,12 @@ export type UserProfile = {
 };
 
 export type StudyPlan = {
-  id: string;
   dailySessions: {
     subject: string;
     priority: string;
     estimatedTime: string;
   }[];
   weeklyTimetable: string;
-  createdAt: string; // Using ISO string for serialization
 };
 
 export type AppUser = {
