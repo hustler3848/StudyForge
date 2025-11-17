@@ -121,7 +121,7 @@ function StudyStreakCard({ streak }: { streak: number }) {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+        <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tight">
           Study Streak
         </CardTitle>
       </CardHeader>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
         className="grid gap-6 lg:grid-cols-3"
         variants={containerVariants}
       >
-        <motion.div className="lg:col-span-2" variants={itemVariants}>
+        <motion.div className="lg:col-span-2 space-y-6" variants={itemVariants}>
           <Card>
             <CardHeader>
               <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tight">
@@ -267,11 +267,11 @@ export default function DashboardPage() {
               </CardContent>
             )}
           </Card>
+          <StudyStreakCard streak={studyStreak} />
         </motion.div>
 
-        <motion.div className="space-y-6" variants={itemVariants}>
+        <motion.div className="lg:col-span-1" variants={itemVariants}>
           <MotivationalQuote />
-          <StudyStreakCard streak={studyStreak} />
         </motion.div>
       </motion.div>
     </motion.div>
