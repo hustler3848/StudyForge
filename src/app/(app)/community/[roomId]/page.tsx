@@ -253,6 +253,7 @@ export default function RoomPage() {
 
             addDoc(answerCollectionRef, newAnswerDoc)
               .then(docRef => {
+                // Immediately set the user's answer state to lock the UI
                 setUserAnswer({ ...newAnswerDoc, id: docRef.id, submittedAt: new Date() });
               })
               .catch(async (serverError) => {
@@ -325,14 +326,6 @@ export default function RoomPage() {
                                             <p className="font-bold mb-2">Your Answer: "{userAnswer.answer}"</p>
                                             {userAnswer.feedback}
                                         </AlertDescription>
-                                    </Alert>
-                                ) : evalResult ? (
-                                     <Alert variant={evalResult.isCorrect ? 'default' : 'destructive'} className={evalResult.isCorrect ? "border-green-500/50" : ""}>
-                                        <AlertTitle className="flex items-center gap-2">
-                                            {evalResult.isCorrect ? <CheckCircle className="text-green-500" /> : <XCircle />}
-                                            Evaluation Complete
-                                        </AlertTitle>
-                                        <AlertDescription>{evalResult.feedback}</AlertDescription>
                                     </Alert>
                                 ) : (
                                     <form onSubmit={handleSubmitAnswer} className="space-y-4">
