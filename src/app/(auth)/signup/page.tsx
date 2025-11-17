@@ -94,7 +94,7 @@ export default function SignUpPage() {
       transition={{ duration: 0.3 }}
       className="w-full"
     >
-      <Card className="w-full max-w-md mx-auto shadow-lg">
+      <Card className="w-full max-w-sm mx-auto shadow-lg">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>

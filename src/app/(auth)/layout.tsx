@@ -29,7 +29,7 @@ export default function AuthLayout({
           </Button>
         </div>
       </header>
-      <main className="flex-1 flex items-center justify-center p-4 mt-[20px]">
+      <main className="flex-1 flex items-center justify-center p-4">
         {children}
       </main>
     </div>
