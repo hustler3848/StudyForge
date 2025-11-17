@@ -29,6 +29,9 @@ import { generateChallengeQuestion, evaluateChallengeAnswer } from '@/ai/flows/d
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { format } from 'date-fns';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 interface RoomMember {
     userId: string;
@@ -123,7 +126,17 @@ export default function RoomPage() {
                 } else if (roomSnap.data().name) {
                     const { question } = await generateChallengeQuestion(roomSnap.data().name);
                     const newChallenge = { question, roomId, createdAt: serverTimestamp() };
-                    await setDoc(challengeDocRef, newChallenge);
+                    
+                    setDoc(challengeDocRef, newChallenge)
+                      .catch(async (serverError) => {
+                        const permissionError = new FirestorePermissionError({
+                          path: challengeDocRef.path,
+                          operation: 'create',
+                          requestResourceData: newChallenge,
+                        });
+                        errorEmitter.emit('permission-error', permissionError);
+                      });
+                    
                     setChallenge({ id: today, question });
                 }
 
@@ -151,36 +164,42 @@ export default function RoomPage() {
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
         setIsJoining(true);
-        try {
-            await runTransaction(firestore, async (transaction) => {
-                const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
-                const memberDocRef = doc(firestore, `communityRooms/${roomId}/members`, user.uid);
+
+        const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
+        const memberDocRef = doc(firestore, `communityRooms/${roomId}/members`, user.uid);
+        let newMember: RoomMember | null = null;
+        
+        runTransaction(firestore, async (transaction) => {
+            const memberDoc = await transaction.get(memberDocRef);
+            if (!memberDoc.exists()) {
+                const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
+                const userDocRef = doc(firestore, `users/${user.uid}/profile`);
+                const userDoc = await transaction.get(userDocRef);
+                const userStreak = userDoc.exists() ? (userDoc.data().studyStreak || 0) : 0;
                 
-                const memberDoc = await transaction.get(memberDocRef);
-                if (!memberDoc.exists()) {
-                    const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
-                    // Fetch streak from user's main doc or default to 0
-                    const userDocRef = doc(firestore, `users/${user.uid}/profile`);
-                    const userDoc = await transaction.get(userDocRef);
-                    const userStreak = userDoc.exists() ? (userDoc.data().studyStreak || 0) : 0;
-                    
-                    const newMember = { 
-                        userId: user.uid, 
-                        anonymousName, 
-                        studyStreak: userStreak,
-                        joinedAt: serverTimestamp()
-                    };
-                    transaction.set(memberDocRef, newMember);
-                    transaction.update(roomDocRef, { memberCount: increment(1) });
-                }
+                newMember = { 
+                    userId: user.uid, 
+                    anonymousName, 
+                    studyStreak: userStreak,
+                    joinedAt: serverTimestamp()
+                } as unknown as RoomMember;
+                
+                transaction.set(memberDocRef, newMember);
+                transaction.update(roomDocRef, { memberCount: increment(1) });
+            }
+        }).then(() => {
+             fetchRoomData();
+        }).catch(async (serverError) => {
+             const permissionError = new FirestorePermissionError({
+                path: memberDocRef.path,
+                operation: 'create',
+                requestResourceData: newMember,
             });
-            // Re-fetch all data to update UI correctly
-            await fetchRoomData(); 
-        } catch (error) {
-            console.error("Error joining room:", error);
-        } finally {
+            errorEmitter.emit('permission-error', permissionError);
+            console.error("Error joining room:", serverError);
+        }).finally(() => {
             setIsJoining(false);
-        }
+        });
     };
     
     const handleSubmitAnswer = async (e: React.FormEvent) => {
@@ -188,6 +207,7 @@ export default function RoomPage() {
         if (!user || !challenge || !answerText.trim()) return;
         setIsSubmitting(true);
         setEvalResult(null);
+
         try {
             const result = await evaluateChallengeAnswer({ question: challenge.question, answer: answerText });
             setEvalResult(result);
@@ -200,12 +220,25 @@ export default function RoomPage() {
                 feedback: result.feedback,
                 submittedAt: serverTimestamp()
             };
-            const docRef = await addDoc(answerCollectionRef, newAnswerDoc);
-            setUserAnswer({ ...newAnswerDoc, id: docRef.id, submittedAt: new Date() });
+
+            addDoc(answerCollectionRef, newAnswerDoc)
+              .then(docRef => {
+                setUserAnswer({ ...newAnswerDoc, id: docRef.id, submittedAt: new Date() });
+              })
+              .catch(async (serverError) => {
+                const permissionError = new FirestorePermissionError({
+                  path: answerCollectionRef.path,
+                  operation: 'create',
+                  requestResourceData: newAnswerDoc,
+                });
+                errorEmitter.emit('permission-error', permissionError);
+              })
+              .finally(() => {
+                setIsSubmitting(false);
+              });
 
         } catch (error) {
             console.error("Error submitting answer:", error);
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -238,7 +271,7 @@ export default function RoomPage() {
                 {!isUserInRoom && user && (
                     <CardContent>
                          <Button onClick={handleJoinRoom} disabled={isJoining}>
-                            {isJoining ? 'Joining...' : 'Join Room & Share Streak'}
+                            {isJoining ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Joining...</> : 'Join Room & Share Streak'}
                         </Button>
                     </CardContent>
                 )}
@@ -343,3 +376,5 @@ export default function RoomPage() {
         </motion.div>
     );
 }
+
+    
