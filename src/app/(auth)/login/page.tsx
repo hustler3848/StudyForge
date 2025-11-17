@@ -112,7 +112,7 @@ export default function LoginPage() {
       <Card className="w-full grid md:grid-cols-2 shadow-lg overflow-hidden">
         <div className="relative hidden md:block">
           <Image
-            src="https://picsum.photos/seed/login/800/1200"
+            src="https://images.unsplash.com/photo-1753005329490-ab77d21066c7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Students studying in a library"
             width={800}
             height={1200}
