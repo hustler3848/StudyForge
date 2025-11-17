@@ -1,8 +1,10 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { collection, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { firestore } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Book, Code, GraduationCap, Users } from 'lucide-react';
@@ -22,6 +24,12 @@ const iconMap: { [key: string]: React.ElementType } = {
     'default': Users
 };
 
+const defaultRooms: Omit<CommunityRoom, 'memberCount'>[] = [
+    { id: 'math-students', name: 'Math Students Room', description: 'For all the calculus crusaders and algebra aces.' },
+    { id: 'cs-wizards', name: 'Computer Science Room', description: 'Code, algorithms, and everything in between.' },
+    { id: 'final-exam-prep', name: 'Final Exam Room', description: 'The final push! Let\'s get through it together.' },
+];
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -40,17 +48,42 @@ const itemVariants = {
   },
 };
 
-// Define the rooms statically
-const communityRooms: CommunityRoom[] = [
-    { id: 'math-students', name: 'Math Students Room', description: 'For all the calculus crusaders and algebra aces.', memberCount: 0 },
-    { id: 'cs-wizards', name: 'Computer Science Room', description: 'Code, algorithms, and everything in between.', memberCount: 0 },
-    { id: 'final-exam-prep', name: 'Final Exam Room', description: 'The final push! Let\'s get through it together.', memberCount: 0 },
-];
-
 
 export default function CommunityPage() {
-    const [rooms, setRooms] = useState<CommunityRoom[]>(communityRooms);
-    const [isLoading, setIsLoading] = useState(false); // Can be removed if we don't fetch live member counts later
+    const [rooms, setRooms] = useState<CommunityRoom[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const setupAndFetchRooms = async () => {
+            setIsLoading(true);
+            const roomsCollection = collection(firestore, 'communityRooms');
+
+            // Ensure default rooms exist
+            for (const room of defaultRooms) {
+                const roomDocRef = doc(firestore, 'communityRooms', room.id);
+                const roomSnap = await getDoc(roomDocRef);
+                if (!roomSnap.exists()) {
+                    await setDoc(roomDocRef, {
+                        name: room.name,
+                        description: room.description,
+                        memberCount: 0,
+                    });
+                }
+            }
+
+            // Fetch all rooms to display
+            const roomsSnapshot = await getDocs(roomsCollection);
+            const roomsList = roomsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as CommunityRoom));
+            
+            setRooms(roomsList);
+            setIsLoading(false);
+        };
+        
+        setupAndFetchRooms();
+    }, []);
 
     const getIcon = (name: string) => {
         for (const key in iconMap) {
@@ -103,7 +136,6 @@ export default function CommunityPage() {
                                     <CardDescription>{room.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
-                                    {/* The member count will be 0 for now. We can fetch this live later if needed. */}
                                     <div className="text-sm text-muted-foreground flex items-center">
                                         <Users className="h-4 w-4 mr-2" />
                                         <span>{room.memberCount || 0} Members</span>

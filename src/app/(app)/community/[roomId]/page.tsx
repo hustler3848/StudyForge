@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
     collection,
@@ -40,6 +40,7 @@ interface RoomDetails {
     id: string;
     name: string;
     description: string;
+    memberCount: number;
 }
 
 interface DailyChallenge {
@@ -88,65 +89,64 @@ export default function RoomPage() {
     const [evalResult, setEvalResult] = useState<{isCorrect: boolean, feedback: string} | null>(null);
     const today = format(new Date(), 'yyyy-MM-dd');
 
-    useEffect(() => {
+    const fetchRoomData = useCallback(async () => {
         if (!roomId || userLoading) return;
         
-        const fetchRoomData = async () => {
-            setIsLoading(true);
-            try {
-                // Fetch room details
-                const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
-                const roomSnap = await getDoc(roomDocRef);
-                if (roomSnap.exists()) {
-                    setRoomDetails({ id: roomSnap.id, ...roomSnap.data() } as RoomDetails);
-                } else {
-                    router.push('/community');
-                    return;
-                }
-
-                // Fetch room members (leaderboard)
-                const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
-                const q = query(membersCollection, orderBy('studyStreak', 'desc'));
-                const membersSnap = await getDocs(q);
-                const memberData = membersSnap.docs.map(doc => doc.data() as RoomMember)
-                setMembers(memberData);
-                
-                // Only proceed with challenge logic if the user is in the room
-                const isUserMember = user ? memberData.some(m => m.userId === user.uid) : false;
-
-                if (user && isUserMember) {
-                    // Fetch or create daily challenge
-                    const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
-                    const challengeSnap = await getDoc(challengeDocRef);
-                    
-                    if (challengeSnap.exists()) {
-                        setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
-                    } else if (roomSnap.data().name) {
-                        // Generate question only if it doesn't exist
-                        const { question } = await generateChallengeQuestion(roomSnap.data().name);
-                        const newChallenge = { question, roomId, createdAt: serverTimestamp() };
-                        await setDoc(challengeDocRef, newChallenge);
-                        setChallenge({ id: today, question });
-                    }
-
-                    // Fetch user's answer for today
-                    const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
-                    const answerQuery = query(answersCollection, where("userId", "==", user.uid));
-                    const answerSnap = await getDocs(answerQuery);
-                    if (!answerSnap.empty) {
-                        const doc = answerSnap.docs[0];
-                        setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching room data:", error);
-            } finally {
-                setIsLoading(false);
+        setIsLoading(true);
+        try {
+            // Fetch room details
+            const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
+            const roomSnap = await getDoc(roomDocRef);
+            if (roomSnap.exists()) {
+                setRoomDetails({ id: roomSnap.id, ...roomSnap.data() } as RoomDetails);
+            } else {
+                router.push('/community');
+                return;
             }
-        };
 
-        fetchRoomData();
+            // Fetch room members (leaderboard)
+            const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
+            const q = query(membersCollection, orderBy('studyStreak', 'desc'));
+            const membersSnap = await getDocs(q);
+            const memberData = membersSnap.docs.map(doc => doc.data() as RoomMember);
+            setMembers(memberData);
+            
+            const isUserMember = user ? memberData.some(m => m.userId === user.uid) : false;
+
+            if (user && isUserMember) {
+                // Fetch or create daily challenge
+                const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
+                const challengeSnap = await getDoc(challengeDocRef);
+                
+                if (challengeSnap.exists()) {
+                    setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
+                } else if (roomSnap.data().name) {
+                    const { question } = await generateChallengeQuestion(roomSnap.data().name);
+                    const newChallenge = { question, roomId, createdAt: serverTimestamp() };
+                    await setDoc(challengeDocRef, newChallenge);
+                    setChallenge({ id: today, question });
+                }
+
+                // Fetch user's answer for today
+                const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
+                const answerQuery = query(answersCollection, where("userId", "==", user.uid));
+                const answerSnap = await getDocs(answerQuery);
+                if (!answerSnap.empty) {
+                    const doc = answerSnap.docs[0];
+                    setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching room data:", error);
+        } finally {
+            setIsLoading(false);
+        }
     }, [roomId, user, userLoading, router, today]);
+
+
+    useEffect(() => {
+        fetchRoomData();
+    }, [fetchRoomData]);
 
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
@@ -160,7 +160,7 @@ export default function RoomPage() {
                 if (!memberDoc.exists()) {
                     const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
                     // Fetch streak from user's main doc or default to 0
-                    const userDocRef = doc(firestore, 'users', user.uid);
+                    const userDocRef = doc(firestore, `users/${user.uid}/profile`);
                     const userDoc = await transaction.get(userDocRef);
                     const userStreak = userDoc.exists() ? (userDoc.data().studyStreak || 0) : 0;
                     
@@ -172,11 +172,10 @@ export default function RoomPage() {
                     };
                     transaction.set(memberDocRef, newMember);
                     transaction.update(roomDocRef, { memberCount: increment(1) });
-                    
-                    // Update local state immediately
-                    setMembers(prev => [...prev, newMember as RoomMember].sort((a, b) => b.studyStreak - a.studyStreak));
                 }
             });
+            // Re-fetch all data to update UI correctly
+            await fetchRoomData(); 
         } catch (error) {
             console.error("Error joining room:", error);
         } finally {
@@ -344,5 +343,3 @@ export default function RoomPage() {
         </motion.div>
     );
 }
-
-    
