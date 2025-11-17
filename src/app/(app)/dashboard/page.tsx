@@ -99,7 +99,7 @@ function MotivationalQuote() {
   }, []);
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 h-full">
+    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Lightbulb className="text-yellow-400" />
@@ -119,13 +119,13 @@ function MotivationalQuote() {
 
 function StudyStreakCard({ streak }: { streak: number }) {
   return (
-    <Card className="h-full">
+    <Card>
       <CardHeader>
         <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tight">
           Study Streak
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6 flex flex-col justify-center items-center h-full">
+      <CardContent className="p-4 sm:p-6 flex flex-col justify-center items-center">
         {streak > 0 ? (
           <div className="text-center">
             <Trophy className="h-16 w-16 mx-auto text-yellow-400 mb-2" />
