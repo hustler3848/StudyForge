@@ -1,13 +1,11 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Book, Code, GraduationCap, Users } from 'lucide-react';
-import { collection, getDocs } from 'firebase/firestore';
-import { firestore } from '@/firebase';
 import { motion } from 'framer-motion';
 
 interface CommunityRoom {
@@ -42,35 +40,17 @@ const itemVariants = {
   },
 };
 
+// Define the rooms statically
+const communityRooms: CommunityRoom[] = [
+    { id: 'math-students', name: 'Math Students Room', description: 'For all the calculus crusaders and algebra aces.', memberCount: 0 },
+    { id: 'cs-wizards', name: 'Computer Science Room', description: 'Code, algorithms, and everything in between.', memberCount: 0 },
+    { id: 'final-exam-prep', name: 'Final Exam Room', description: 'The final push! Let\'s get through it together.', memberCount: 0 },
+];
+
+
 export default function CommunityPage() {
-    const [rooms, setRooms] = useState<CommunityRoom[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchRooms = async () => {
-            setIsLoading(true);
-            try {
-                const roomsCollection = collection(firestore, 'communityRooms');
-                const snapshot = await getDocs(roomsCollection);
-                const roomsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityRoom));
-                setRooms(roomsData);
-            } catch (error) {
-                console.error("Error fetching community rooms:", error);
-                // For demonstration, create mock rooms if Firestore is empty or fails
-                if (rooms.length === 0) {
-                    setRooms([
-                        { id: 'math-students', name: 'Math Students Room', description: 'For all the calculus crusaders and algebra aces.', memberCount: 0 },
-                        { id: 'cs-wizards', name: 'Computer Science Room', description: 'Code, algorithms, and everything in between.', memberCount: 0 },
-                        { id: 'final-exam-prep', name: 'Final Exam Room', description: 'The final push! Let\'s get through it together.', memberCount: 0 },
-                    ]);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchRooms();
-    }, []);
+    const [rooms, setRooms] = useState<CommunityRoom[]>(communityRooms);
+    const [isLoading, setIsLoading] = useState(false); // Can be removed if we don't fetch live member counts later
 
     const getIcon = (name: string) => {
         for (const key in iconMap) {
@@ -123,6 +103,7 @@ export default function CommunityPage() {
                                     <CardDescription>{room.description}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow">
+                                    {/* The member count will be 0 for now. We can fetch this live later if needed. */}
                                     <div className="text-sm text-muted-foreground flex items-center">
                                         <Users className="h-4 w-4 mr-2" />
                                         <span>{room.memberCount || 0} Members</span>
@@ -143,5 +124,3 @@ export default function CommunityPage() {
         </motion.div>
     );
 }
-
-    
