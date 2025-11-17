@@ -178,7 +178,7 @@ export default function DashboardPage() {
       >
         {features.map((feature) => (
           <motion.div key={feature.title} variants={itemVariants}>
-            <Link href={feature.href} className="block group">
+            <Link href={feature.href} className="block group h-full">
               <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-lg hover:border-primary/50">
                 <CardHeader>
                   <div
