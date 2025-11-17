@@ -29,6 +29,7 @@ import {
   Layers,
   Hourglass,
   Users,
+  Target,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -47,6 +48,7 @@ import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/ai-readiness', label: 'AI Readiness', icon: Target },
   { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
   { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
   { href: '/flashcards', label: 'Flashcards', icon: Layers },
@@ -172,5 +174,3 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthGuard>
   );
 }
-
-    
