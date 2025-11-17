@@ -17,3 +17,14 @@ At its core, StudyWise AI is powered by a suite of sophisticated AI tools built 
 To foster motivation and consistency, StudyWise AI incorporates gamified elements like a **Study Streak tracker** and a minimalist **Focus Session** timer with a live progress ring. Furthermore, the **Community Rooms** feature creates a collaborative environment where students can join subject-specific groups, share their study streaks on a leaderboard, and participate in daily AI-generated challenges.
 
 Built on a modern tech stack including **Next.js, Firebase, and Tailwind CSS**, StudyWise AI provides a seamless, responsive, and secure user experience. By integrating these powerful AI features into a single, intuitive platform, StudyWise AI empowers students to study smarter, not just harder.
+
+## Tech Stack
+
+*   **Framework**: Next.js (App Router)
+*   **Language**: TypeScript
+*   **Styling**: Tailwind CSS with ShadCN UI components
+*   **Backend & Database**: Firebase (Firestore, Firebase Authentication)
+*   **AI/Generative APIs**: Groq API for real-time text generation (Llama 3.1 & 3.3 models)
+*   **AI Orchestration**: Genkit for defining structured AI flows
+*   **Core Libraries**: React, Zod (for validation), React Hook Form, Framer Motion (for animations)
+*   **Deployment**: Firebase App Hosting
