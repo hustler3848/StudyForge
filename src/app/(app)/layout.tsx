@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sidebar } from '@/components/ui/sidebar';
+import { Sidebar, NavLinks } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   LogOut,
@@ -16,7 +16,8 @@ import {
   Hourglass,
   Users,
   Target,
-  TestTube2
+  TestTube2,
+  Menu,
 } from 'lucide-react';
 import AuthGuard from '@/components/auth-guard';
 import { useAuth } from '@/hooks/use-auth';
@@ -34,6 +35,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 
 export const navItems = [
@@ -76,7 +78,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               "flex-1 flex flex-col transition-all duration-300 ease-in-out",
               isSidebarCollapsed ? "md:ml-20" : "md:ml-60"
           )}>
-            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="md:hidden">
+                      <Menu className="h-5 w-5" />
+                      <span className="sr-only">Toggle Menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[240px] p-0">
+                     <div className="h-16 flex items-center border-b px-6">
+                       <Logo />
+                    </div>
+                    <nav className="p-4 space-y-1">
+                      <NavLinks isCollapsed={false} />
+                    </nav>
+                  </SheetContent>
+                </Sheet>
+
                 <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
                     <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
@@ -107,7 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <DropdownMenuItem disabled>
                              <div className="flex items-center gap-2">
                               <Sparkles className="h-4 w-4 text-orange-400" />
-                              <span className="font-semibold">{user.studyStreak}-day</span>
+                              <span className="font-semibold">{user.study Streak}-day</span>
                               <span className="text-muted-foreground">Study Streak!</span>
                              </div>
                           </DropdownMenuItem>
