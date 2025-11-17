@@ -202,7 +202,21 @@ export default function StudyPlanPage() {
                                 <li key={index} className="flex justify-between items-center p-3 bg-secondary rounded-lg">
                                     <span className={cn("font-semibold px-2 py-1 rounded-md text-sm", getColorForSubject(session.subject))}>{session.subject}</span>
                                     <span className="text-sm text-muted-foreground">{session.estimatedTime}</span>
-                                    <span className="text-sm font-medium capitalize">{session.priority} Priority</span>
+                                    <span
+                                      className={cn(
+                                        "px-2 py-1 text-xs font-semibold rounded-full capitalize",
+                                        {
+                                          "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300":
+                                            session.priority.toLowerCase() === "high",
+                                          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300":
+                                            session.priority.toLowerCase() === "medium",
+                                          "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300":
+                                            session.priority.toLowerCase() === "low",
+                                        }
+                                      )}
+                                    >
+                                        {session.priority}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
