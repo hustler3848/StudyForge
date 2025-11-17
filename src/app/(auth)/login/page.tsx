@@ -13,7 +13,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   Form,
@@ -26,8 +25,9 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 function GoogleIcon() {
   return (
@@ -62,6 +62,7 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 export default function LoginPage() {
   const { signInWithEmail, signInWithGoogle, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -72,6 +73,7 @@ export default function LoginPage() {
     setError(null);
     try {
       await signInWithEmail(data.email, data.password);
+      router.push('/dashboard');
     } catch (error: any) {
       switch (error.code) {
         case 'auth/user-not-found':
@@ -80,12 +82,24 @@ export default function LoginPage() {
         case 'auth/wrong-password':
           setError('Incorrect password. Please try again.');
           break;
+        case 'auth/invalid-credential':
+          setError('Incorrect email or password. Please try again.');
+          break;
         default:
           setError('An unexpected error occurred. Please try again.');
           break;
       }
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    } catch (error) {
+      setError('Failed to sign in with Google. Please try again.');
+    }
+  };
 
   return (
     <motion.div
@@ -94,7 +108,7 @@ export default function LoginPage() {
       transition={{ duration: 0.3 }}
       className="w-full"
     >
-      <Card className="w-full max-w-md mx-auto shadow-lg">
+      <Card className="w-full max-w-sm mx-auto shadow-lg">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
           <CardDescription>Sign in to access your study tools.</CardDescription>
@@ -127,7 +141,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,11 +177,11 @@ export default function LoginPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={signInWithGoogle}
+              onClick={handleGoogleSignIn}
               disabled={loading}
             >
               <GoogleIcon />
-              Google
+              Sign in with Google
             </Button>
           </div>
         </CardContent>

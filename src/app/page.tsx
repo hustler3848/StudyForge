@@ -9,19 +9,17 @@ import {
   FileSignature,
   Layers,
   BarChart,
-  Star,
   CheckCircle,
   Sun,
   Moon,
 } from 'lucide-react';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
@@ -99,7 +97,7 @@ const Header = () => {
           </motion.div>
           <motion.div variants={itemVariants}>
             <Link
-              href="/signin"
+              href="/login"
               className={cn(buttonVariants({ variant: 'ghost' }))}
             >
               Login
@@ -150,7 +148,7 @@ const HeroSection = () => (
               'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
             )}
           >
-            Start Free - No signup needed
+            Get Started
           </Link>
         </motion.div>
       </motion.div>

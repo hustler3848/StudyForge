@@ -42,9 +42,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
-import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import { Suspense } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

@@ -62,24 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, handleUser);
     return () => {
       unsubscribe();
-      setLoading(false);
     }
   }, []);
   
   const signInWithEmail = async (email: string, password: string) => {
-    setLoading(true);
     await signInWithEmailAndPassword(auth, email, password);
     // onAuthStateChanged will handle the rest
   };
   
   const signUpWithEmail = async (email: string, password: string) => {
-    setLoading(true);
     await createUserWithEmailAndPassword(auth, email, password);
-    // onAuthStateChanged will handle the rest
+    // onAuthStateChanged will handle creating the user doc
   };
 
   const signInWithGoogle = async () => {
-    setLoading(true);
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
     // onAuthStateChanged will handle the rest
@@ -88,17 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     await signOut(auth);
     setUser(null);
-    setLoading(false);
     router.push('/login');
   };
 
   const updateUserProfile = async (profileData: Partial<AppUser>) => {
     if (user) {
-      setLoading(true);
       const userDocRef = doc(firestore, `users/${user.uid}`);
       await setDoc(userDocRef, profileData, { merge: true });
       setUser(prevUser => prevUser ? { ...prevUser, ...profileData } : null);
-      setLoading(false);
     }
   };
 

@@ -16,19 +16,29 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return; // Do nothing while loading
     }
 
-    const isAuthPage = pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/login');
+    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
 
+    // If user is not logged in and not on an auth page, redirect to login
     if (!user && !isAuthPage) {
       router.push('/login');
-    } else if (user) {
-      if (!user.profileComplete && pathname !== '/onboarding') {
-        router.push('/onboarding');
-      } else if (user.profileComplete && (isAuthPage || pathname === '/onboarding')) {
-        router.push('/dashboard');
-      }
+      return;
     }
+
+    // If user is logged in and on an auth page, redirect to dashboard
+    if (user && isAuthPage) {
+      router.push('/dashboard');
+      return;
+    }
+    
+    // If user is logged in, but profile is not complete, redirect to onboarding
+    if (user && !user.profileComplete && pathname !== '/onboarding') {
+      router.push('/onboarding');
+      return;
+    }
+
   }, [user, loading, router, pathname]);
   
+  // While loading, show a skeleton UI
   if (loading) {
     return (
       <div className="p-4 sm:p-6">
@@ -37,25 +47,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
   
-  const isAuthPage = pathname.startsWith('/signin') || pathname.startsWith('/signup') || pathname.startsWith('/login');
-  
-  // Render children if rules are met, otherwise render skeleton while redirecting
-  if (!user && isAuthPage) {
-    return <>{children}</>;
-  }
-  
-  if (user && !user.profileComplete && pathname === '/onboarding') {
-    return <>{children}</>;
-  }
-  
-  if (user && user.profileComplete && !isAuthPage && pathname !== '/onboarding') {
-    return <>{children}</>;
-  }
-
-  // Fallback skeleton while routing logic catches up
-  return (
-    <div className="p-4 sm:p-6">
-      <DashboardSkeleton />
-    </div>
-  );
+  // If we are on a public page or the user is authenticated, show the children
+  return <>{children}</>;
 }

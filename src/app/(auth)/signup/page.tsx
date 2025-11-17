@@ -27,6 +27,7 @@ import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useRouter } from "next/navigation";
 
 function GoogleIcon() {
   return (
@@ -67,6 +68,7 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 export default function SignUpPage() {
   const { signUpWithEmail, signInWithGoogle, loading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -77,7 +79,7 @@ export default function SignUpPage() {
     setError(null);
     try {
       await signUpWithEmail(data.email, data.password);
-      // The auth guard will handle redirection
+      router.push('/login');
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
         setError('This email address is already in use.');
@@ -86,6 +88,15 @@ export default function SignUpPage() {
       }
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      router.push('/dashboard');
+    } catch (error) {
+      setError('Failed to sign in with Google. Please try again.');
+    }
+  };
 
   return (
     <motion.div
@@ -129,7 +140,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -142,7 +153,7 @@ export default function SignUpPage() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -179,7 +190,7 @@ export default function SignUpPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={signInWithGoogle}
+              onClick={handleGoogleSignIn}
               disabled={loading}
             >
               <GoogleIcon />
