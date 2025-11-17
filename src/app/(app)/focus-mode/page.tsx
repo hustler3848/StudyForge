@@ -24,6 +24,40 @@ const motivationalNudges = [
   "Success isn't overnight. It's when every day you get a little better than the day before."
 ];
 
+const ProgressRing = ({ progress }: { progress: number }) => {
+    const radius = 80;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (progress / 100) * circumference;
+
+    return (
+        <div className="relative h-52 w-52 sm:h-64 sm:w-64">
+            <svg className="h-full w-full -rotate-90" viewBox="0 0 200 200">
+                 <circle
+                    className="text-secondary"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    fill="transparent"
+                    r={radius}
+                    cx="100"
+                    cy="100"
+                />
+                <motion.circle
+                    className="text-primary"
+                    stroke="currentColor"
+                    strokeWidth="12"
+                    strokeLinecap="round"
+                    fill="transparent"
+                    r={radius}
+                    cx="100"
+                    cy="100"
+                    style={{ strokeDasharray: circumference, strokeDashoffset: offset }}
+                    transition={{ duration: 0.5, ease: "linear" }}
+                />
+            </svg>
+        </div>
+    );
+};
+
 
 export default function FocusModePage() {
   const [time, setTime] = useState(FOCUS_DURATION);
@@ -87,6 +121,8 @@ export default function FocusModePage() {
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
 
+  const progress = (time / FOCUS_DURATION) * 100;
+
   return (
     <div className="flex justify-center items-center h-[70vh]">
       <motion.div
@@ -94,7 +130,7 @@ export default function FocusModePage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="w-full max-w-md text-center">
+        <Card className="w-full max-w-md text-center shadow-2xl">
           <CardContent className="p-8">
             <AnimatePresence mode="wait">
               {isComplete ? (
@@ -116,11 +152,14 @@ export default function FocusModePage() {
                     key="timer"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-8"
+                    className="space-y-8 flex flex-col items-center"
                   >
                       <h2 className="text-2xl font-semibold text-muted-foreground">Focus Mode</h2>
-                      <div className="font-mono text-8xl font-bold text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                          {formatTime(time)}
+                      <div className="relative flex items-center justify-center">
+                        <ProgressRing progress={progress} />
+                        <div className="absolute font-mono text-5xl sm:text-6xl font-bold text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                            {formatTime(time)}
+                        </div>
                       </div>
                       <div className="flex gap-4 justify-center">
                           <Button onClick={toggleTimer} size="lg" className="w-36">
