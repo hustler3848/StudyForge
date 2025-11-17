@@ -12,6 +12,7 @@ import {
   CheckCircle,
   Sun,
   Moon,
+  Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -21,6 +22,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+    Sheet,
+    SheetContent,
+    SheetTrigger,
+} from '@/components/ui/sheet';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -42,6 +48,12 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#how-it-works", label: "How it works" },
+    { href: "#pricing", label: "Pricing" },
+];
+
 const Header = () => {
   const { setTheme, theme } = useTheme();
 
@@ -62,33 +74,21 @@ const Header = () => {
             <Logo />
           </motion.div>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <motion.div variants={itemVariants}>
-              <Link
-                href="#features"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
-              >
-                Features
-              </Link>
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <Link
-                href="#how-it-works"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
-              >
-                How it works
-              </Link>
-            </motion.div>
-            <motion.div variants={itemVariants}>
-              <Link
-                href="#pricing"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
-              >
-                Pricing
-              </Link>
-            </motion.div>
+            {navLinks.map((link) => (
+                 <motion.div variants={itemVariants} key={link.href}>
+                    <Link
+                        href={link.href}
+                        className="text-foreground/60 transition-colors hover:text-foreground/80"
+                    >
+                        {link.label}
+                    </Link>
+                 </motion.div>
+            ))}
           </nav>
         </div>
-        <motion.div className="flex flex-1 items-center justify-end space-x-2" variants={sectionVariants}>
+
+        {/* Desktop nav */}
+        <motion.div className="hidden md:flex flex-1 items-center justify-end space-x-2" variants={sectionVariants}>
           <motion.div variants={itemVariants}>
             <Button variant="ghost" size="icon" onClick={toggleTheme}>
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -116,6 +116,43 @@ const Header = () => {
             </Link>
           </motion.div>
         </motion.div>
+        
+        {/* Mobile nav */}
+        <div className="md:hidden ml-auto">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <Menu />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[250px]">
+                    <nav className="flex flex-col gap-6 text-lg font-medium mt-10">
+                        {navLinks.map((link) => (
+                            <Link key={link.href} href={link.href} className="text-foreground/80 hover:text-foreground transition-colors">{link.label}</Link>
+                        ))}
+                        <div className="mt-auto space-y-4">
+                            <Link
+                                href="/login"
+                                className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'w-full')}
+                            >
+                                Login
+                            </Link>
+                             <Link
+                                href="/signup"
+                                className={cn(
+                                    buttonVariants({ size: 'lg' }),
+                                    'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow w-full'
+                                )}
+                                >
+                                Get Started
+                            </Link>
+                        </div>
+                    </nav>
+                </SheetContent>
+            </Sheet>
+        </div>
+
+
       </motion.div>
     </header>
   );
@@ -496,5 +533,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
