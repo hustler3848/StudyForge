@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Crown, User, Shield, Cat, Dog, Rabbit, Fox, HelpCircle, Loader2, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
+import { Crown, User, Shield, HelpCircle, Loader2, CheckCircle, XCircle, BrainCircuit } from 'lucide-react';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { motion } from 'framer-motion';
 import { generateChallengeQuestion, evaluateChallengeAnswer } from '@/ai/flows/daily-challenge';
@@ -65,14 +65,6 @@ const rankIcons = [
     <Shield key="2" className="h-5 w-5 text-gray-400" />,
     <Shield key="3" className="h-5 w-5 text-yellow-600" />,
 ];
-
-const animalIcons = [Cat, Dog, Rabbit, Fox];
-
-const getAnimalIcon = (name: string) => {
-    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const Icon = animalIcons[hash % animalIcons.length];
-    return <Icon className="h-5 w-5" />;
-}
 
 export default function RoomPage() {
     const { roomId } = useParams();
@@ -172,10 +164,12 @@ export default function RoomPage() {
 
 
     useEffect(() => {
-        const unsubscribe = fetchRoomData();
-        // This is not correct, fetchRoomData is async, it doesn't return unsubscribe
-        // However, the internal logic of fetchRoomData should handle this
-    }, [fetchRoomData]);
+        if (!authLoading) {
+            const unsubscribe = fetchRoomData();
+            // This is not correct, fetchRoomData is async, it doesn't return unsubscribe
+            // However, the internal logic of fetchRoomData should handle this
+        }
+    }, [authLoading, user, fetchRoomData]);
 
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
@@ -367,7 +361,7 @@ export default function RoomPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-3">
-                                            {getAnimalIcon(member.anonymousName)}
+                                            <User className="h-5 w-5" />
                                             <span>{member.anonymousName} {member.userId === user?.uid && "(You)"}</span>
                                         </div>
                                     </TableCell>
@@ -386,5 +380,6 @@ export default function RoomPage() {
             </Card>
         </motion.div>
     );
+}
 
     
