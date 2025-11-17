@@ -28,6 +28,7 @@ import {
   FileSignature,
   Layers,
   Hourglass,
+  Users,
 } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
@@ -50,6 +51,7 @@ const navItems = [
   { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
   { href: '/flashcards', label: 'Flashcards', icon: Layers },
   { href: '/focus-mode', label: 'Focus Mode', icon: Hourglass },
+  { href: '/community', label: 'Community', icon: Users },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -170,3 +172,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     </AuthGuard>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -263,6 +264,66 @@
         "currentStreak",
         "longestStreak"
       ]
+    },
+    "CommunityRoom": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CommunityRoom",
+      "type": "object",
+      "description": "Represents a community room for a specific subject or topic.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CommunityRoom entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the community room."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the community room."
+        },
+        "memberCount": {
+          "type": "number",
+          "description": "The number of members in the room."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "RoomMember": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RoomMember",
+      "type": "object",
+      "description": "Represents a user's membership and stats within a community room.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The user's unique identifier."
+        },
+        "anonymousName": {
+          "type": "string",
+          "description": "An anonymous name for the leaderboard (e.g., 'Creative Cat')."
+        },
+        "studyStreak": {
+          "type": "number",
+          "description": "The user's current study streak, shared with the room."
+        },
+        "joinedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user joined the room."
+        }
+      },
+      "required": [
+        "userId",
+        "anonymousName",
+        "studyStreak",
+        "joinedAt"
+      ]
     }
   },
   "auth": {
@@ -316,7 +377,7 @@
           "schema": {
             "$ref": "#/backend/entities/StudyPlan"
           },
-          "description": "Stores study plans generated for the user. Accessible only by the user.",
+          "description": "Stores study plans generated for the. Accessible only by the user.",
           "params": [
             {
               "name": "userId",
@@ -384,8 +445,46 @@
             }
           ]
         }
+      },
+      {
+        "path": "/communityRooms/{roomId}",
+        "definition": {
+          "entityName": "CommunityRoom",
+          "schema": {
+            "$ref": "#/backend/entities/CommunityRoom"
+          },
+          "description": "Stores public information about a community room.",
+          "params": [
+            {
+              "name": "roomId",
+              "description": "The unique identifier for the community room."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/communityRooms/{roomId}/members/{userId}",
+        "definition": {
+          "entityName": "RoomMember",
+          "schema": {
+            "$ref": "#/backend/entities/RoomMember"
+          },
+          "description": "Stores anonymous leaderboard data for a user within a room.",
+          "params": [
+            {
+              "name": "roomId",
+              "description": "The unique identifier for the community room."
+            },
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations."
+    "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations. The new CommunityRooms feature follows this pattern, with a top-level collection for public room data and a sub-collection for member data, allowing for efficient leaderboard queries."
   }
 }
+
+    
