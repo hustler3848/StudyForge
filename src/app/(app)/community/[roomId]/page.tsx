@@ -32,7 +32,7 @@ import {
   XCircle,
   BrainCircuit,
 } from "lucide-react";
-import { Cat, Dog, Rabbit, Fox, Panda, Bear } from 'iconoir-react';
+import { Cat, Dog, Rabbit, Fox, Panda } from 'iconoir-react';
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator';
 import { motion } from 'framer-motion';
 import { generateChallengeQuestion, evaluateChallengeAnswer } from '@/ai/flows/daily-challenge';
@@ -76,7 +76,7 @@ const rankIcons = [
     <Shield key="3" className="h-5 w-5 text-yellow-600" />,
 ];
 
-const animalIcons = [Cat, Dog, Rabbit, Fox, Panda, Bear];
+const animalIcons = [Cat, Dog, Rabbit, Fox, Panda];
 
 // Simple hash function to pick a consistent icon for a user
 const getAnimalIcon = (name: string) => {
