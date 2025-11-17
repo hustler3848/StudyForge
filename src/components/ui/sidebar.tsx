@@ -252,7 +252,7 @@ const SidebarToggleButton = React.forwardRef<
       size="icon"
       className={cn(
         "absolute top-1/2 -translate-y-1/2 rounded-full h-8 w-8 bg-background border shadow-md hover:bg-accent z-50",
-        "group-data-[side=left]/sidebar-wrapper:right-0 group-data-[side=left]/sidebar-wrapper:translate-x-1/2",
+        "right-0 translate-x-1/2",
         "group-data-[side=right]/sidebar-wrapper:left-0 group-data-[side=right]/sidebar-wrapper:-translate-x-1/2",
         "group-data-[state=expanded]/sidebar-wrapper:rotate-180",
          "hidden md:inline-flex"
@@ -330,7 +330,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "flex-1 w-full flex-col",
+        "flex-1 w-full flex flex-col",
         className
       )}
       {...props}
@@ -769,5 +769,3 @@ export {
   SidebarTrigger,
   useSidebar,
 }
-
-    

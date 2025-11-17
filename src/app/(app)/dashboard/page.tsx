@@ -131,7 +131,7 @@ function StudyStreakCard({ streak }: { streak: number }) {
             <Trophy className="h-16 w-16 mx-auto text-yellow-400 mb-2" />
             <p className="text-5xl font-bold">{streak}</p>
             <p className="text-muted-foreground">
-              {streak > 1 ? "Day" : "Days"} Streak!
+              {streak > 1 ? "Days" : "Day"} Streak!
             </p>
             <p className="text-sm mt-2">Keep up the great work!</p>
           </div>
