@@ -14,9 +14,10 @@ service cloud.firestore {
     }
 
     // Community rooms are public to read for any authenticated user
+    // and can be created or updated by any authenticated user.
     match /communityRooms/{roomId} {
-      allow read: if request.auth != null;
-      // Only allow updating member count, not other fields
+      allow read, create: if request.auth != null;
+      // Only allow updating member count, not other fields by default
       allow update: if request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberCount']);
     }
 
@@ -42,5 +43,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
