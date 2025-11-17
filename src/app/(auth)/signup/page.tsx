@@ -109,12 +109,12 @@ export default function SignUpPage() {
       <Card className="w-full md:grid md:grid-cols-2 overflow-hidden shadow-none md:shadow-lg">
          <div className="relative hidden md:block">
             <Image
-                src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                src="https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                 alt="Person writing in a notebook"
                 width={800}
                 height={1200}
                 className="h-full w-full object-cover"
-                data-ai-hint="library study"
+                data-ai-hint="books knowledge"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         </div>

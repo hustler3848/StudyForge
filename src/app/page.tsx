@@ -229,11 +229,12 @@ const HeroSection = () => (
         className="relative w-full max-w-2xl mx-auto aspect-video"
       >
          <Image
-            src="https://storage.googleapis.com/project-spark-b97vo/static-assets/561b32f9-4614-41d3-827d-5c4a52033c48"
+            src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="StudyWise AI Dashboard"
             fill
             className="object-cover rounded-2xl border bg-background/50 p-2 shadow-2xl shadow-blue-500/10"
             priority
+            data-ai-hint="study books"
          />
       </motion.div>
     </div>

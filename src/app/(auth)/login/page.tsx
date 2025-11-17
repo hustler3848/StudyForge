@@ -112,12 +112,12 @@ export default function LoginPage() {
       <Card className="w-full md:grid md:grid-cols-2 overflow-hidden shadow-none md:shadow-lg">
         <div className="relative hidden md:block">
           <Image
-            src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1854&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Students studying in a library"
             width={800}
             height={1200}
             className="h-full w-full object-cover"
-            data-ai-hint="library study"
+            data-ai-hint="library books"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         </div>
