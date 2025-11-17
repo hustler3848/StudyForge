@@ -165,7 +165,7 @@ export default function DashboardPage() {
       animate="visible"
     >
       <motion.div variants={itemVariants}>
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
+        <h1 className="font-headline text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 to-blue-400 text-transparent bg-clip-text">
           Welcome back, {user?.displayName || "Student"}!
         </h1>
         <p className="text-muted-foreground mt-2">
@@ -211,7 +211,7 @@ export default function DashboardPage() {
         <motion.div className="lg:col-span-2" variants={itemVariants}>
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+              <CardTitle className="font-headline text-xl md:text-2xl font-bold tracking-tight">
                 Upcoming Tasks
               </CardTitle>
             </CardHeader>

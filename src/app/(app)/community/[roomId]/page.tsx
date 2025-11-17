@@ -293,7 +293,7 @@ export default function RoomPage() {
         >
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-2xl md:text-3xl font-extrabold">{roomDetails.name}</CardTitle>
+                    <CardTitle className="font-headline text-2xl md:text-3xl font-extrabold">{roomDetails.name}</CardTitle>
                     <CardDescription>{roomDetails.description}</CardDescription>
                 </CardHeader>
                 {!isUserInRoom && user && (
@@ -309,7 +309,7 @@ export default function RoomPage() {
             {isUserInRoom && (
                 <Card>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><HelpCircle className="text-primary"/> Daily Challenge</CardTitle>
+                        <CardTitle className="font-headline flex items-center gap-2"><HelpCircle className="text-primary"/> Daily Challenge</CardTitle>
                         <CardDescription>Test your knowledge with today's question.</CardDescription>
                     </CardHeader>
                     <CardContent>
