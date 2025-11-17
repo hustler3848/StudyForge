@@ -28,12 +28,12 @@ export type EvaluateAnswerOutput = z.infer<typeof EvaluateAnswerOutputSchema>;
 
 
 /**
- * Generates a challenge question for a given topic.
+ * Generates a challenge question for a given topic and grade level.
  */
-export async function generateChallengeQuestion(topic: string): Promise<GenerateQuestionOutput> {
+export async function generateChallengeQuestion(topic: string, gradeLevel: string): Promise<GenerateQuestionOutput> {
   const systemPrompt = `
 You are an AI that creates educational challenge questions.
-Generate one question about the provided topic.
+Generate one question about the provided topic, tailored for the user's specified grade level.
 The question should be clear, concise, and suitable for a daily challenge.
 Return ONLY VALID JSON with a "question" field.
 
@@ -43,7 +43,10 @@ Example:
 }
 `;
 
-  const userPrompt = `Topic: ${topic}`;
+  const userPrompt = `
+Topic: ${topic}
+Grade Level: ${gradeLevel}
+`;
 
   const result = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
@@ -103,5 +106,3 @@ User's Answer: "${input.answer}"
     const parsed = JSON.parse(jsonText);
     return EvaluateAnswerOutputSchema.parse(parsed);
 }
-
-    

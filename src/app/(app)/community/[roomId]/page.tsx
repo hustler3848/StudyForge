@@ -110,7 +110,7 @@ export default function RoomPage() {
     const today = format(new Date(), 'yyyy-MM-dd');
 
     const fetchRoomData = useCallback(async () => {
-        if (!roomId || userLoading) return;
+        if (!roomId || userLoading || !user) return;
         
         setIsLoading(true);
 
@@ -134,8 +134,8 @@ export default function RoomPage() {
                         getDoc(challengeDocRef).then(challengeSnap => {
                              if (challengeSnap.exists()) {
                                 setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
-                            } else if (roomData.name) {
-                                generateChallengeQuestion(roomData.name).then(({ question }) => {
+                            } else if (roomData.name && user.profile?.gradeLevel) {
+                                generateChallengeQuestion(roomData.name, user.profile.gradeLevel).then(({ question }) => {
                                     const newChallenge = { question, roomId, createdAt: serverTimestamp() };
                                     setDoc(challengeDocRef, newChallenge)
                                     .catch(async (serverError) => {
@@ -207,7 +207,7 @@ export default function RoomPage() {
                 const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
                 // We cannot reliably get user streak from a transaction like this without fetching first.
                 // Assuming streak is 0 for simplicity on join, or it would need to be passed in.
-                const userStreak = 0; 
+                const userStreak = user.studyStreak || 0;
                 
                 const newMember = { 
                     userId: user.uid, 
