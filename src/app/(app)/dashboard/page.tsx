@@ -27,10 +27,15 @@ import {
   Lightbulb,
   Sparkles,
   Trophy,
+  Target,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { generateMotivationNudge } from "@/ai/flows/ai-motivation-nudges";
+import {
+  calculateExamReadiness,
+  type ExamReadinessInput,
+} from "@/ai/flows/exam-readiness";
 import { motion } from "framer-motion";
 
 const containerVariants = {
@@ -98,7 +103,7 @@ function MotivationalQuote() {
   }, []);
 
   return (
-    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+    <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Lightbulb className="text-yellow-400" />
@@ -118,13 +123,13 @@ function MotivationalQuote() {
 
 function StudyStreakCard({ streak }: { streak: number }) {
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
           Study Streak
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-4 sm:p-6 flex flex-col justify-center items-center h-full">
         {streak > 0 ? (
           <div className="text-center">
             <Trophy className="h-16 w-16 mx-auto text-yellow-400 mb-2" />
@@ -150,6 +155,101 @@ function StudyStreakCard({ streak }: { streak: number }) {
     </Card>
   );
 }
+
+const ScoreCircle = ({ score }: { score: number }) => (
+  <div className="relative h-28 w-28 sm:h-32 sm:w-32 mx-auto">
+    <svg className="h-full w-full" viewBox="0 0 36 36">
+      <defs>
+        <linearGradient id="readinessGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="rgb(59 130 246)" />
+          <stop offset="100%" stopColor="rgb(34 197 94)" />
+        </linearGradient>
+      </defs>
+      <path
+        className="text-secondary"
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.8305 a 15.9155 15.9155 0 0 1 0 -31.8305"
+        fill="none"
+        strokeWidth="3"
+      />
+      <motion.path
+        stroke="url(#readinessGradient)"
+        strokeDasharray="100 100"
+        strokeDashoffset={100}
+        animate={{ strokeDashoffset: 100 - score }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.8305 a 15.9155 15.9155 0 0 1 0 -31.8305"
+        fill="none"
+        strokeWidth="3"
+        strokeLinecap="round"
+        transform="rotate(90 18 18)"
+      />
+    </svg>
+    <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <span className="text-4xl font-bold">{score}%</span>
+      <span className="text-xs text-muted-foreground">Ready</span>
+    </div>
+  </div>
+);
+
+function ExamReadinessCard() {
+  const [score, setScore] = useState<number | null>(null);
+  const [tip, setTip] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Mock data for the readiness calculation
+    const mockInput: ExamReadinessInput = {
+      hoursStudied: 15,
+      topicDifficulty: "medium",
+      consistency: "5 of 7 days",
+      quizzesSolved: 3,
+      deadlineProximity: "in 1 week",
+    };
+
+    calculateExamReadiness(mockInput)
+      .then((result) => {
+        setScore(result.readinessScore);
+        setTip(result.coachingTip);
+      })
+      .catch((err) => {
+        console.error("Readiness score error:", err);
+        setScore(78); // Fallback score
+        setTip("Stay consistent with your study plan for best results.");
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">
+          Exam Readiness
+        </CardTitle>
+        <CardDescription>Your AI-calculated preparedness score.</CardDescription>
+      </CardHeader>
+      <CardContent className="text-center">
+        {isLoading ? (
+          <div className="space-y-4">
+            <div className="h-32 w-32 rounded-full bg-muted mx-auto animate-pulse" />
+            <div className="h-4 w-3/4 mx-auto rounded-md bg-muted animate-pulse" />
+          </div>
+        ) : score !== null && (
+          <div className="space-y-4">
+            <ScoreCircle score={score} />
+            <div className="mt-4">
+              <h3 className="font-semibold flex items-center justify-center gap-2">
+                <Target className="h-5 w-5 text-green-500" />
+                Coaching Tip
+              </h3>
+              <p className="text-muted-foreground text-sm italic">"{tip}"</p>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -182,7 +282,9 @@ export default function DashboardPage() {
               <Card className="h-full flex flex-col transition-all duration-150 ease-in-out group-hover:shadow-lg hover:border-primary/50">
                 <CardHeader>
                   <div
-                    className={`p-3 rounded-full w-min ${feature.bgColor}`}
+                    className={cn(
+                      `p-3 rounded-full w-min ${feature.bgColor}`
+                    )}
                   >
                     <feature.icon className={`h-6 w-6 ${feature.color}`} />
                   </div>
@@ -265,11 +367,30 @@ export default function DashboardPage() {
             )}
           </Card>
         </motion.div>
+
         <motion.div className="space-y-6" variants={itemVariants}>
           <MotivationalQuote />
           <StudyStreakCard streak={studyStreak} />
         </motion.div>
       </motion.div>
+       <motion.div
+        className="grid gap-6 md:grid-cols-2"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+            <ExamReadinessCard />
+        </motion.div>
+        <motion.div variants={itemVariants}>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Coming Soon</CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center text-muted-foreground h-48">
+                    <p>More smart widgets are on the way!</p>
+                </CardContent>
+            </Card>
+        </motion.div>
+       </motion.div>
     </motion.div>
   );
 }

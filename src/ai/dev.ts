@@ -5,3 +5,4 @@ import '@/ai/flows/essay-feedback.ts';
 import '@/ai/flows/ai-motivation-nudges.ts';
 import '@/ai/flows/flashcard-generation.node';
 import '@/ai/flows/smart-study-plan.ts';
+import '@/ai/flows/exam-readiness.ts';
