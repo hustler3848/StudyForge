@@ -15,31 +15,34 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (loading) {
       return; // Do nothing while loading
     }
-
+    
     const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
+    const isPublicPage = isAuthPage || pathname === '/' || pathname === '/onboarding';
 
-    // If user is not logged in and not on an auth page, redirect to login
-    if (!user && !isAuthPage) {
+    // If user is not logged in and not on a public page, redirect to login
+    if (!user && !isPublicPage) {
       router.push('/login');
       return;
     }
 
-    // If user is logged in and on an auth page, redirect to dashboard
-    if (user && isAuthPage) {
-      router.push('/dashboard');
-      return;
-    }
-    
-    // If user is logged in, but profile is not complete, redirect to onboarding
-    if (user && !user.profileComplete && pathname !== '/onboarding') {
-      router.push('/onboarding');
-      return;
+    // If user is logged in...
+    if (user) {
+        // and on an auth page, redirect to dashboard
+        if (isAuthPage) {
+            router.push('/dashboard');
+            return;
+        }
+        // but profile is not complete, redirect to onboarding (unless already there)
+        if (!user.profileComplete && pathname !== '/onboarding') {
+            router.push('/onboarding');
+            return;
+        }
     }
 
   }, [user, loading, router, pathname]);
   
-  // While loading, show a skeleton UI
-  if (loading) {
+  // While loading auth state on a protected route, show a skeleton UI
+  if (loading && pathname !== '/') {
     return (
       <div className="p-4 sm:p-6">
         <DashboardSkeleton />
@@ -47,6 +50,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // If we are on a public page or the user is authenticated, show the children
+  // Render children
   return <>{children}</>;
 }

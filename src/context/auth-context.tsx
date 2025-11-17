@@ -39,9 +39,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userDocRef = doc(firestore, `users/${firebaseUser.uid}`);
       const docSnap = await getDoc(userDocRef);
       if (docSnap.exists()) {
+        const userData = docSnap.data();
         setUser({
           uid: firebaseUser.uid,
-          ...docSnap.data(),
+          ...userData,
         } as AppUser);
       } else {
         // This is a new user, create their document
@@ -94,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUserProfile = async (profileData: Partial<AppUser>) => {
     if (user && auth.currentUser) {
         // Update Firebase Auth profile (for things like displayName)
-        if (profileData.displayName) {
+        if (profileData.displayName && profileData.displayName !== auth.currentUser.displayName) {
             await updateProfile(auth.currentUser, { displayName: profileData.displayName });
         }
 

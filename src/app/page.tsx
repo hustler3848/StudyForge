@@ -30,6 +30,7 @@ import {
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/use-auth';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -56,6 +57,7 @@ const navLinks = [
 
 const Header = () => {
   const { setTheme, theme } = useTheme();
+  const { user, loading } = useAuth();
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -96,25 +98,41 @@ const Header = () => {
               <span className="sr-only">Toggle theme</span>
             </Button>
           </motion.div>
-          <motion.div variants={itemVariants}>
-            <Link
-              href="/login"
-              className={cn(buttonVariants({ variant: 'ghost' }))}
-            >
-              Login
-            </Link>
-          </motion.div>
-          <motion.div variants={itemVariants}>
-            <Link
-              href="/signup"
-              className={cn(
-                buttonVariants({ variant: 'default' }),
-                'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
-              )}
-            >
-              Get Started
-            </Link>
-          </motion.div>
+            {!loading && user ? (
+                <motion.div variants={itemVariants}>
+                <Link
+                    href="/dashboard"
+                    className={cn(
+                    buttonVariants({ variant: 'default' }),
+                    'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
+                    )}
+                >
+                    Dashboard
+                </Link>
+                </motion.div>
+            ) : (
+                <>
+                <motion.div variants={itemVariants}>
+                    <Link
+                        href="/login"
+                        className={cn(buttonVariants({ variant: 'ghost' }))}
+                    >
+                        Login
+                    </Link>
+                </motion.div>
+                <motion.div variants={itemVariants}>
+                    <Link
+                    href="/signup"
+                    className={cn(
+                        buttonVariants({ variant: 'default' }),
+                        'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow'
+                    )}
+                    >
+                    Get Started
+                    </Link>
+                </motion.div>
+                </>
+            )}
         </motion.div>
         
         {/* Mobile nav */}
@@ -130,22 +148,36 @@ const Header = () => {
                         {navLinks.map((link) => (
                             <Link key={link.href} href={link.href} className="text-foreground/80 hover:text-foreground transition-colors">{link.label}</Link>
                         ))}
-                        <div className="mt-auto space-y-4">
-                            <Link
-                                href="/login"
-                                className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'w-full')}
-                            >
-                                Login
-                            </Link>
-                             <Link
-                                href="/signup"
-                                className={cn(
+                         <div className="mt-auto space-y-4">
+                            {!loading && user ? (
+                                <Link
+                                    href="/dashboard"
+                                    className={cn(
                                     buttonVariants({ size: 'lg' }),
                                     'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow w-full'
-                                )}
+                                    )}
                                 >
-                                Get Started
-                            </Link>
+                                    Dashboard
+                                </Link>
+                            ) : (
+                                <>
+                                <Link
+                                    href="/login"
+                                    className={cn(buttonVariants({ variant: 'ghost', size: 'lg' }), 'w-full')}
+                                >
+                                    Login
+                                </Link>
+                                <Link
+                                    href="/signup"
+                                    className={cn(
+                                        buttonVariants({ size: 'lg' }),
+                                        'bg-gradient-to-r from-blue-500 to-sky-400 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-shadow w-full'
+                                    )}
+                                    >
+                                    Get Started
+                                </Link>
+                                </>
+                            )}
                         </div>
                     </nav>
                 </SheetContent>
