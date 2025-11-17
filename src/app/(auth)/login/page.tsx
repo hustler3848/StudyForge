@@ -107,12 +107,12 @@ export default function LoginPage() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="w-full max-w-4xl"
+      className="w-full max-w-sm md:max-w-4xl"
     >
-      <Card className="w-full grid md:grid-cols-2 shadow-lg overflow-hidden">
+      <Card className="w-full md:grid md:grid-cols-2 overflow-hidden shadow-none md:shadow-lg">
         <div className="relative hidden md:block">
           <Image
-            src="https://images.unsplash.com/photo-1753005329490-ab77d21066c7?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1854&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Students studying in a library"
             width={800}
             height={1200}
@@ -121,7 +121,7 @@ export default function LoginPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         </div>
-        <div className="p-6 sm:p-8 flex flex-col justify-center">
+        <div className="p-4 sm:p-8 flex flex-col justify-center">
             <CardHeader className="text-center p-0 mb-6">
               <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
               <CardDescription>Sign in to access your study tools.</CardDescription>
