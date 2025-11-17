@@ -20,13 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Bot, Loader2, Target } from "lucide-react";
@@ -40,7 +33,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const readinessSchema = z.object({
   hoursStudied: z.coerce.number().min(0, "Cannot be negative."),
-  topicDifficulty: z.enum(["easy", "medium", "hard"]),
+  subject: z.string().min(2, "Please enter a subject name."),
   consistency: z.string().min(3, "Please describe your consistency."),
   quizzesSolved: z.coerce.number().min(0, "Cannot be negative."),
   deadlineProximity: z.string().min(3, "Please describe the deadline."),
@@ -92,7 +85,7 @@ export default function AiReadinessPage() {
     resolver: zodResolver(readinessSchema),
     defaultValues: {
       hoursStudied: 10,
-      topicDifficulty: "medium",
+      subject: "Advanced Calculus",
       consistency: "4 out of 7 days",
       quizzesSolved: 5,
       deadlineProximity: "in 1 week",
@@ -164,22 +157,13 @@ export default function AiReadinessPage() {
                 </div>
                 <FormField
                   control={form.control}
-                  name="topicDifficulty"
+                  name="subject"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Topic Difficulty</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select difficulty" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="easy">Easy</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="hard">Hard</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Subject Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Advanced Calculus, History 101" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

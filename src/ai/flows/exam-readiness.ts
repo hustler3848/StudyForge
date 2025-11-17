@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,7 +14,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 // INPUT SCHEMA
 const ExamReadinessInputSchema = z.object({
   hoursStudied: z.number(),
-  topicDifficulty: z.enum(['easy', 'medium', 'hard']),
+  subject: z.string().describe('The name of the exam subject, e.g., "Advanced Calculus"'),
   consistency: z.string().describe('e.g., studied 4 out of 7 days'),
   quizzesSolved: z.number(),
   deadlineProximity: z.string().describe('e.g., "in 3 days", "in 2 weeks"'),
@@ -49,7 +50,9 @@ RULES:
 - Return ONLY VALID JSON, no markdown or commentary.
 - readinessScore MUST be a number between 0 and 100.
 - coachingTip MUST be a short, encouraging, and actionable tip (max 25 words).
-- Analyze all inputs to determine the score. High hours, consistency, and solved quizzes improve the score. A close deadline and high difficulty negatively impact the score if other factors are low.
+- Analyze all inputs to determine the score.
+- **You must infer the difficulty from the subject name.** For example, "Advanced Calculus" is harder than "History 101".
+- High hours, consistency, and solved quizzes improve the score. A close deadline and high inferred difficulty negatively impact the score if other factors are low.
 
 The JSON must match this structure:
 {
@@ -61,7 +64,7 @@ The JSON must match this structure:
     const userPrompt = `
 Calculate the exam readiness score based on this data:
 - Hours Studied: ${input.hoursStudied}
-- Topic Difficulty: ${input.topicDifficulty}
+- Subject: ${input.subject}
 - Study Consistency: ${input.consistency}
 - Quizzes Solved: ${input.quizzesSolved}
 - Exam Deadline: ${input.deadlineProximity}
