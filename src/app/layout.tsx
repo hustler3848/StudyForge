@@ -23,7 +23,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'StudyWise AI',
+  title: 'StudyForge',
   description: 'Unlock Your Academic Potential with AI-powered learning tools.',
 };
 

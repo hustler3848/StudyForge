@@ -230,7 +230,7 @@ const HeroSection = () => (
       >
          <Image
             src="https://images.unsplash.com/photo-1516979187457-637abb4f9353?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="StudyWise AI Dashboard"
+            alt="StudyForge Dashboard"
             fill
             className="object-cover rounded-2xl border bg-background/50 p-2 shadow-2xl shadow-blue-500/10"
             priority
@@ -369,7 +369,7 @@ const BenefitsSection = () => (
   >
     <div className="container grid md:grid-cols-2 gap-12 items-center">
       <motion.div variants={itemVariants}>
-        <h2 className="text-4xl font-extrabold font-headline">Why StudyWise?</h2>
+        <h2 className="text-4xl font-extrabold font-headline">Why StudyForge?</h2>
         <p className="mt-4 text-lg text-muted-foreground">
           Focus on learning, not on logistics. We handle the planning so you can focus on what matters.
         </p>
@@ -382,10 +382,14 @@ const BenefitsSection = () => (
           ))}
         </ul>
       </motion.div>
-      <motion.div variants={itemVariants} className="relative h-96 w-full flex items-center justify-center overflow-hidden rounded-2xl border bg-background/50 p-8 shadow-lg">
-         <div className="absolute -top-10 -right-40 w-72 h-72 bg-purple-200/30 dark:bg-purple-500/10 rounded-full filter blur-3xl opacity-80 animate-blob"></div>
-         <div className="absolute -bottom-40 -left-10 w-72 h-72 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full filter blur-3xl opacity-80 animate-blob animation-delay-4000"></div>
-         <p className="text-muted-foreground text-center">Unlock your full potential with structured, AI-driven learning.</p>
+      <motion.div variants={itemVariants} className="relative h-96 w-full flex items-center justify-center overflow-hidden rounded-2xl">
+         <Image
+            src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Students collaborating"
+            fill
+            className="object-cover rounded-2xl shadow-lg"
+            data-ai-hint="collaboration study"
+         />
       </motion.div>
     </div>
   </motion.section>

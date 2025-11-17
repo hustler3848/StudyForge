@@ -168,7 +168,7 @@ export default function OnboardingPage() {
             <Logo />
           </div>
           <CardTitle className="font-headline text-xl md:text-2xl text-center">
-            Welcome to StudyWise AI!
+            Welcome to StudyForge!
           </CardTitle>
           <CardDescription className="text-center">
             Let's personalize your experience.

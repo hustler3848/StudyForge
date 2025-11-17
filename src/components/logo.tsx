@@ -10,7 +10,7 @@ export function Logo({ isCollapsed, className }: { isCollapsed?: boolean, classN
           "font-bold font-headline whitespace-nowrap transition-opacity duration-200",
           isCollapsed ? "opacity-0" : "opacity-100"
       )}>
-        StudyWise AI
+        StudyForge
       </span>
     </div>
   );
