@@ -53,6 +53,7 @@ interface ChallengeAnswer {
     answer: string;
     isCorrect: boolean;
     feedback: string;
+    submittedAt: any;
 }
 
 const rankIcons = [
@@ -88,7 +89,7 @@ export default function RoomPage() {
     const today = format(new Date(), 'yyyy-MM-dd');
 
     useEffect(() => {
-        if (!roomId || !user) return;
+        if (!roomId || userLoading) return;
         
         const fetchRoomData = async () => {
             setIsLoading(true);
@@ -107,21 +108,28 @@ export default function RoomPage() {
                 const membersCollection = collection(firestore, `communityRooms/${roomId}/members`);
                 const q = query(membersCollection, orderBy('studyStreak', 'desc'));
                 const membersSnap = await getDocs(q);
-                setMembers(membersSnap.docs.map(doc => doc.data() as RoomMember));
+                const memberData = membersSnap.docs.map(doc => doc.data() as RoomMember)
+                setMembers(memberData);
                 
-                // Fetch or create daily challenge
-                const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
-                const challengeSnap = await getDoc(challengeDocRef);
-                if (challengeSnap.exists()) {
-                    setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
-                } else {
-                    const { question } = await generateChallengeQuestion(roomSnap.data().name);
-                    await setDoc(challengeDocRef, { question, roomId });
-                    setChallenge({ id: today, question });
-                }
+                // Only proceed with challenge logic if the user is in the room
+                const isUserMember = user ? memberData.some(m => m.userId === user.uid) : false;
 
-                // Fetch user's answer for today
-                if (user) {
+                if (user && isUserMember) {
+                    // Fetch or create daily challenge
+                    const challengeDocRef = doc(firestore, `communityRooms/${roomId}/challenges`, today);
+                    const challengeSnap = await getDoc(challengeDocRef);
+                    
+                    if (challengeSnap.exists()) {
+                        setChallenge({ id: challengeSnap.id, ...challengeSnap.data() } as DailyChallenge);
+                    } else if (roomSnap.data().name) {
+                        // Generate question only if it doesn't exist
+                        const { question } = await generateChallengeQuestion(roomSnap.data().name);
+                        const newChallenge = { question, roomId, createdAt: serverTimestamp() };
+                        await setDoc(challengeDocRef, newChallenge);
+                        setChallenge({ id: today, question });
+                    }
+
+                    // Fetch user's answer for today
                     const answersCollection = collection(firestore, `communityRooms/${roomId}/challenges/${today}/answers`);
                     const answerQuery = query(answersCollection, where("userId", "==", user.uid));
                     const answerSnap = await getDocs(answerQuery);
@@ -129,34 +137,44 @@ export default function RoomPage() {
                         const doc = answerSnap.docs[0];
                         setUserAnswer({id: doc.id, ...doc.data()} as ChallengeAnswer);
                     }
-
                 }
-
-
             } catch (error) {
                 console.error("Error fetching room data:", error);
             } finally {
                 setIsLoading(false);
             }
         };
+
         fetchRoomData();
-    }, [roomId, user, router, today]);
+    }, [roomId, user, userLoading, router, today]);
 
     const handleJoinRoom = async () => {
         if (!user || !roomId) return;
         setIsJoining(true);
         try {
-            const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
-            const memberDocRef = doc(firestore, `communityRooms/${roomId}/members`, user.uid);
-
             await runTransaction(firestore, async (transaction) => {
+                const roomDocRef = doc(firestore, 'communityRooms', roomId as string);
+                const memberDocRef = doc(firestore, `communityRooms/${roomId}/members`, user.uid);
+                
                 const memberDoc = await transaction.get(memberDocRef);
                 if (!memberDoc.exists()) {
                     const anonymousName: string = uniqueNamesGenerator({ dictionaries: [adjectives, animals], separator: ' ', style: 'capital' });
-                    const newMember: RoomMember = { userId: user.uid, anonymousName, studyStreak: user.studyStreak || 0 };
-                    transaction.set(memberDocRef, { ...newMember, joinedAt: serverTimestamp() });
+                    // Fetch streak from user's main doc or default to 0
+                    const userDocRef = doc(firestore, 'users', user.uid);
+                    const userDoc = await transaction.get(userDocRef);
+                    const userStreak = userDoc.exists() ? (userDoc.data().studyStreak || 0) : 0;
+                    
+                    const newMember = { 
+                        userId: user.uid, 
+                        anonymousName, 
+                        studyStreak: userStreak,
+                        joinedAt: serverTimestamp()
+                    };
+                    transaction.set(memberDocRef, newMember);
                     transaction.update(roomDocRef, { memberCount: increment(1) });
-                    setMembers(prev => [...prev, newMember].sort((a, b) => b.studyStreak - a.studyStreak));
+                    
+                    // Update local state immediately
+                    setMembers(prev => [...prev, newMember as RoomMember].sort((a, b) => b.studyStreak - a.studyStreak));
                 }
             });
         } catch (error) {
@@ -168,7 +186,7 @@ export default function RoomPage() {
     
     const handleSubmitAnswer = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user || !challenge || !answerText) return;
+        if (!user || !challenge || !answerText.trim()) return;
         setIsSubmitting(true);
         setEvalResult(null);
         try {
@@ -176,14 +194,15 @@ export default function RoomPage() {
             setEvalResult(result);
 
             const answerCollectionRef = collection(firestore, `communityRooms/${roomId}/challenges/${challenge.id}/answers`);
-            const newAnswer: Omit<ChallengeAnswer, 'id'> = {
+            const newAnswerDoc = {
                 userId: user.uid,
                 answer: answerText,
                 isCorrect: result.isCorrect,
                 feedback: result.feedback,
+                submittedAt: serverTimestamp()
             };
-            const docRef = await addDoc(answerCollectionRef, { ...newAnswer, submittedAt: serverTimestamp() });
-            setUserAnswer({ ...newAnswer, id: docRef.id });
+            const docRef = await addDoc(answerCollectionRef, newAnswerDoc);
+            setUserAnswer({ ...newAnswerDoc, id: docRef.id, submittedAt: new Date() });
 
         } catch (error) {
             console.error("Error submitting answer:", error);
@@ -191,7 +210,6 @@ export default function RoomPage() {
             setIsSubmitting(false);
         }
     };
-
 
     const isUserInRoom = members.some(m => m.userId === user?.uid);
 
@@ -218,7 +236,7 @@ export default function RoomPage() {
                     <CardTitle className="text-2xl md:text-3xl font-extrabold">{roomDetails.name}</CardTitle>
                     <CardDescription>{roomDetails.description}</CardDescription>
                 </CardHeader>
-                {!isUserInRoom && (
+                {!isUserInRoom && user && (
                     <CardContent>
                          <Button onClick={handleJoinRoom} disabled={isJoining}>
                             {isJoining ? 'Joining...' : 'Join Room & Share Streak'}
@@ -265,7 +283,7 @@ export default function RoomPage() {
                                             placeholder="Type your answer here..."
                                             disabled={isSubmitting}
                                         />
-                                        <Button type="submit" disabled={isSubmitting}>
+                                        <Button type="submit" disabled={isSubmitting || !answerText.trim()}>
                                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                                             Submit Answer
                                         </Button>
@@ -326,3 +344,5 @@ export default function RoomPage() {
         </motion.div>
     );
 }
+
+    

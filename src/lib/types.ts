@@ -54,4 +54,19 @@ export type FlashcardDeck = {
   createdAt: Date;
 };
 
+export type DailyChallenge = {
+    id: string; // YYYY-MM-DD
+    roomId: string;
+    question: string;
+};
+
+export type ChallengeAnswer = {
+    id: string;
+    challengeId: string;
+    userId: string;
+    answer: string;
+    isCorrect: boolean;
+    feedback: string;
+    submittedAt: Date;
+};
     
