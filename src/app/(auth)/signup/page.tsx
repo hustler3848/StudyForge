@@ -92,8 +92,9 @@ export default function SignUpPage() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className="w-full"
     >
-      <Card className="w-full max-w-md shadow-lg">
+      <Card className="w-full max-w-md mx-auto shadow-lg">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>
