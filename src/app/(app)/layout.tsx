@@ -36,17 +36,27 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 
-
-export const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ai-readiness', label: 'AI Readiness', icon: Target },
-  { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
-  { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
-  { href: '/flashcards', label: 'Flashcards', icon: Layers },
-  { href: '/quiz', label: 'Quick Quiz', icon: TestTube2 },
-  { href: '/focus-mode', label: 'Focus Mode', icon: Hourglass },
-  { href: '/community', label: 'Community', icon: Users },
+export const navSections = [
+  {
+    title: "General",
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/community', label: 'Community', icon: Users },
+    ],
+  },
+  {
+    title: "Tools",
+    items: [
+      { href: '/ai-readiness', label: 'AI Readiness', icon: Target },
+      { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
+      { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
+      { href: '/flashcards', label: 'Flashcards', icon: Layers },
+      { href: '/quiz', label: 'Quick Quiz', icon: TestTube2 },
+      { href: '/focus-mode', label: 'Focus Mode', icon: Hourglass },
+    ]
+  }
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -90,8 +100,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                      <div className="h-16 flex items-center border-b px-6">
                        <Logo />
                     </div>
-                    <nav className="p-4 space-y-1">
-                      <NavLinks isCollapsed={false} />
+                    <nav className="p-4 space-y-2">
+                      {navSections.map((section, sectionIndex) => (
+                        <div key={section.title}>
+                          {sectionIndex > 0 && <Separator className="my-2" />}
+                           {section.title !== 'General' && (
+                             <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                              {section.title}
+                            </h4>
+                          )}
+                          <div className="space-y-1">
+                            <NavLinks sections={[section]} isCollapsed={false} />
+                          </div>
+                        </div>
+                      ))}
                     </nav>
                   </SheetContent>
                 </Sheet>

@@ -1,51 +1,61 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from './tooltip';
-import { navItems } from '@/app/(app)/layout';
+import { navSections } from '@/app/(app)/layout';
 import { Logo } from '../logo';
 import { Separator } from './separator';
 
+interface NavLink {
+    href: string;
+    label: string;
+    icon: React.ElementType;
+}
+interface NavSection {
+    title: string;
+    items: NavLink[];
+}
 
 interface NavLinksProps {
+    sections: NavSection[];
     isCollapsed: boolean;
 }
 
-export function NavLinks({ isCollapsed }: NavLinksProps) {
+export function NavLinks({ sections, isCollapsed }: NavLinksProps) {
     const pathname = usePathname();
 
     return (
         <TooltipProvider delayDuration={0}>
-            {navItems.map(({ href, label, icon: Icon }) => (
-                <Tooltip key={href}>
-                    <TooltipTrigger asChild>
-                        <Button
-                            asChild
-                            variant={pathname.startsWith(href) ? 'secondary' : 'ghost'}
-                            className={cn(
-                                "w-full justify-start h-10",
-                                isCollapsed ? "justify-center px-0" : "px-3"
-                            )}
-                        >
-                            <Link href={href}>
-                                <Icon className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
-                                <span className={cn("truncate", isCollapsed && "sr-only")}>{label}</span>
-                            </Link>
-                        </Button>
-                    </TooltipTrigger>
-                    {isCollapsed && (
-                        <TooltipContent side="right" className="ml-2">
-                            {label}
-                        </TooltipContent>
-                    )}
-                </Tooltip>
+            {sections.map(section => (
+                section.items.map(({ href, label, icon: Icon }) => (
+                    <Tooltip key={href}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                asChild
+                                variant={pathname.startsWith(href) ? 'secondary' : 'ghost'}
+                                className={cn(
+                                    "w-full justify-start h-10",
+                                    isCollapsed ? "justify-center px-0" : "px-3"
+                                )}
+                            >
+                                <Link href={href}>
+                                    <Icon className={cn("h-5 w-5", !isCollapsed && "mr-2")} />
+                                    <span className={cn("truncate", isCollapsed && "sr-only")}>{label}</span>
+                                </Link>
+                            </Button>
+                        </TooltipTrigger>
+                        {isCollapsed && (
+                            <TooltipContent side="right" className="ml-2">
+                                {label}
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                ))
             ))}
         </TooltipProvider>
     )
@@ -57,8 +67,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
-    const { user } = useAuth();
-    
     return (
         <TooltipProvider delayDuration={0}>
             <aside className={cn(
@@ -70,8 +78,18 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
                 </div>
                 
                 <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-                    <nav className="px-4 py-4 space-y-1">
-                       <NavLinks isCollapsed={isCollapsed} />
+                    <nav className="px-4 py-4 space-y-2">
+                        {navSections.map((section, index) => (
+                           <div key={section.title} className="space-y-1">
+                               {index > 0 && <Separator className="my-2" />}
+                               {!isCollapsed && section.title !== 'General' && (
+                                   <h4 className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                       {section.title}
+                                   </h4>
+                               )}
+                               <NavLinks sections={[section]} isCollapsed={isCollapsed} />
+                           </div>
+                        ))}
                     </nav>
                 </div>
 
