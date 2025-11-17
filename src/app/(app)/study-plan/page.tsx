@@ -58,12 +58,15 @@ const subjectColors: { [key: string]: string } = {
   physics: "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300",
   literature: "bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300",
   algebra: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/50 dark:text-cyan-300",
+  economics: "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300",
+  finance: "bg-lime-100 text-lime-800 dark:bg-lime-900/50 dark:text-lime-300",
+  art: "bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300",
 };
 
 const getColorForSubject = (subject: string) => {
   const lowerCaseSubject = subject.toLowerCase();
   for (const key in subjectColors) {
-    if (lowerCaseSubject.includes(key)) {
+    if (lowerCaseSubject.includes(key) && key !== 'default') {
       return subjectColors[key];
     }
   }
