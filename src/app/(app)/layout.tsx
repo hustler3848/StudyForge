@@ -126,7 +126,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <DropdownMenuItem disabled>
                              <div className="flex items-center gap-2">
                               <Sparkles className="h-4 w-4 text-orange-400" />
-                              <span className="font-semibold">{user.study Streak}-day</span>
+                              <span className="font-semibold">{user.studyStreak}-day</span>
                               <span className="text-muted-foreground">Study Streak!</span>
                              </div>
                           </DropdownMenuItem>
