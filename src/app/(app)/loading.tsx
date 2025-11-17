@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -8,6 +7,7 @@ import { FlashcardsSkeleton } from '@/components/skeletons/flashcards-skeleton';
 import { FocusModeSkeleton } from '@/components/skeletons/focus-mode-skeleton';
 import { SettingsSkeleton } from '@/components/skeletons/settings-skeleton';
 import { StudyPlanSkeleton } from '@/components/skeletons/study-plan-skeleton';
+import { QuizSkeleton } from '@/components/skeletons/quiz-skeleton';
 
 export default function Loading() {
   const pathname = usePathname();
@@ -30,6 +30,9 @@ export default function Loading() {
     }
     if (pathname.includes('/study-plan')) {
       return <StudyPlanSkeleton />;
+    }
+    if (pathname.includes('/quiz')) {
+        return <QuizSkeleton />;
     }
     // Fallback for any other pages
     return <DashboardSkeleton />;

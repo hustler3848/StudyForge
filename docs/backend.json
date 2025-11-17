@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "UserProfile": {
@@ -352,6 +351,50 @@
         "submittedAt": { "type": "string", "format": "date-time", "description": "Timestamp of submission." }
       },
       "required": ["id", "challengeId", "userId", "answer", "isCorrect", "submittedAt"]
+    },
+     "Quiz": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Quiz",
+      "type": "object",
+      "description": "Represents an AI-generated quiz on a specific topic.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Quiz entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Quiz)"
+        },
+        "topic": {
+          "type": "string",
+          "description": "The topic of the quiz."
+        },
+        "questions": {
+          "type": "array",
+          "description": "List of questions in the quiz.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "questionText": { "type": "string" },
+              "options": { "type": "array", "items": { "type": "string" } },
+              "correctAnswerIndex": { "type": "number" },
+              "explanation": { "type": "string" },
+              "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] }
+            },
+            "required": ["questionText", "options", "correctAnswerIndex", "explanation", "difficulty"]
+          }
+        },
+        "score": {
+            "type": "number",
+            "description": "The user's score on the quiz."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+      },
+      "required": [ "id", "userId", "topic", "questions", "createdAt" ]
     }
   },
   "auth": {
@@ -475,6 +518,26 @@
         }
       },
       {
+        "path": "/users/{userId}/quizzes/{quizId}",
+        "definition": {
+            "entityName": "Quiz",
+            "schema": {
+                "$ref": "#/backend/entities/Quiz"
+            },
+            "description": "Stores quizzes taken by the user. Accessible only by the user.",
+            "params": [
+                {
+                    "name": "userId",
+                    "description": "The unique identifier for the user."
+                },
+                {
+                    "name": "quizId",
+                    "description": "The unique identifier for the quiz."
+                }
+            ]
+        }
+      },
+      {
         "path": "/communityRooms/{roomId}",
         "definition": {
           "entityName": "CommunityRoom",
@@ -539,5 +602,3 @@
     "reasoning": "The Firestore data structure is designed to provide a secure and scalable solution for the StudyWise AI application. The primary focus is on ensuring authorization independence and simplifying security rules while adhering to DBAC (Database-Based Access Control). The structure leverages path-based ownership for user-specific data and avoids hierarchical `get()` calls in security rules by denormalizing any necessary authorization data. Collections are segregated based on security needs, and access control is managed via path-based ownership, enhancing the clarity and predictability of the data structure. This approach directly supports the application's core features, including user onboarding, AI-driven study planning, essay feedback, and flashcard generation. Specifically, user-generated content like essays, study plans, flashcards, study sessions, and streak data are stored under the respective user's document, creating a clear ownership model that makes security rules straightforward and robust. The structure follows the principles of authorization independence by avoiding the need to fetch parent document data for authorization. This approach guarantees atomic operations and makes debugging easier. By adhering to these guidelines, the data structure facilitates secure and efficient `list` operations. The new CommunityRooms feature follows this pattern, with a top-level collection for public room data and a sub-collection for member data, allowing for efficient leaderboard queries. The new Daily Challenge feature is nested under community rooms to associate challenges with specific topics, and answers are nested under challenges, creating a clear relational hierarchy."
   }
 }
-
-    

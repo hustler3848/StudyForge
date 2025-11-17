@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +16,7 @@ import {
   Hourglass,
   Users,
   Target,
+  TestTube2
 } from 'lucide-react';
 import AuthGuard from '@/components/auth-guard';
 import { useAuth } from '@/hooks/use-auth';
@@ -42,6 +42,7 @@ export const navItems = [
   { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
   { href: '/essay-review', label: 'Essay Review', icon: FileSignature },
   { href: '/flashcards', label: 'Flashcards', icon: Layers },
+  { href: '/quiz', label: 'Quick Quiz', icon: TestTube2 },
   { href: '/focus-mode', label: 'Focus Mode', icon: Hourglass },
   { href: '/community', label: 'Community', icon: Users },
 ];
