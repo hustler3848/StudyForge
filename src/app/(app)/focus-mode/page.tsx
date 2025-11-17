@@ -8,6 +8,7 @@ import { Play, Pause, RotateCw, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 const NUDGE_INTERVAL = 5 * 60 * 1000; // 5 minutes in ms
 
@@ -65,6 +66,9 @@ export default function FocusModePage() {
   const [isActive, setIsActive] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [inputMinutes, setInputMinutes] = useState('25');
+  const [inputSeconds, setInputSeconds] = useState('00');
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const nudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
@@ -79,7 +83,6 @@ export default function FocusModePage() {
       setIsComplete(true);
       if (timerRef.current) clearInterval(timerRef.current);
       if (nudgeTimerRef.current) clearInterval(nudgeTimerRef.current);
-      // In a real app, save this session to Firestore
     }
 
     return () => {
@@ -97,10 +100,17 @@ export default function FocusModePage() {
   };
   
   const handleStartSession = () => {
-    setTime(duration);
+    const minutes = parseInt(inputMinutes, 10) || 0;
+    const seconds = parseInt(inputSeconds, 10) || 0;
+    const totalSeconds = (minutes * 60) + seconds;
+
+    if (totalSeconds <= 0) return;
+
+    setDuration(totalSeconds);
+    setTime(totalSeconds);
     setSessionStarted(true);
     setIsActive(true);
-    showMotivationNudge(); // show one at the start
+    showMotivationNudge();
     nudgeTimerRef.current = setInterval(showMotivationNudge, NUDGE_INTERVAL);
   }
 
@@ -108,10 +118,8 @@ export default function FocusModePage() {
     if(isComplete) return;
     setIsActive(!isActive);
     if (!isActive) {
-        // Resuming timer
         nudgeTimerRef.current = setInterval(showMotivationNudge, NUDGE_INTERVAL);
     } else {
-        // Pausing timer
         if (nudgeTimerRef.current) clearInterval(nudgeTimerRef.current);
     }
   };
@@ -122,29 +130,23 @@ export default function FocusModePage() {
     setIsActive(false);
     setIsComplete(false);
     setSessionStarted(false);
-    setTime(duration);
+    const newDuration = (parseInt(inputMinutes, 10) || 0) * 60 + (parseInt(inputSeconds, 10) || 0);
+    setDuration(newDuration);
+    setTime(newDuration);
   };
   
-  const selectDuration = (minutes: number) => {
-    setDuration(minutes * 60);
-    setTime(minutes * 60);
-  }
-
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
 
-  const progress = (time / duration) * 100;
-
-  const durationOptions = [15, 25, 45, 60];
+  const progress = duration > 0 ? (time / duration) * 100 : 0;
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8">
         <div className="text-center">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-headline">Focus Session</h1>
-            <p className="text-muted-foreground mt-2">Minimize distractions and get in the zone.</p>
         </div>
         <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -200,18 +202,23 @@ export default function FocusModePage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-8 flex flex-col items-center"
                  >
-                    <h2 className="text-2xl font-semibold text-muted-foreground">Select Duration</h2>
-                     <div className="flex flex-wrap gap-3 justify-center">
-                        {durationOptions.map(min => (
-                           <Button 
-                             key={min} 
-                             variant={duration === min * 60 ? 'default' : 'outline'}
-                             onClick={() => selectDuration(min)}
-                             className="w-24 h-16 text-lg"
-                           >
-                             {min} min
-                           </Button>
-                        ))}
+                    <h2 className="text-2xl font-semibold text-muted-foreground">Set Timer</h2>
+                     <div className="flex items-center justify-center gap-2">
+                        <Input
+                            type="number"
+                            value={inputMinutes}
+                            onChange={(e) => setInputMinutes(e.target.value)}
+                            className="w-24 h-16 text-2xl text-center"
+                            aria-label="Minutes"
+                        />
+                         <span className="text-2xl font-bold text-muted-foreground">:</span>
+                        <Input
+                            type="number"
+                            value={inputSeconds}
+                            onChange={(e) => setInputSeconds(e.target.value)}
+                            className="w-24 h-16 text-2xl text-center"
+                            aria-label="Seconds"
+                        />
                     </div>
                     <Button onClick={handleStartSession} size="lg" className="w-full">
                        <Play className="mr-2"/> Start Focus Session
