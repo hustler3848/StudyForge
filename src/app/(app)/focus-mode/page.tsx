@@ -3,12 +3,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Play, Pause, RotateCw, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
-const FOCUS_DURATION = 25 * 60; // 25 minutes
 const NUDGE_INTERVAL = 5 * 60 * 1000; // 5 minutes in ms
 
 const motivationalNudges = [
@@ -60,8 +60,10 @@ const ProgressRing = ({ progress }: { progress: number }) => {
 
 
 export default function FocusModePage() {
-  const [time, setTime] = useState(FOCUS_DURATION);
+  const [duration, setDuration] = useState(25 * 60);
+  const [time, setTime] = useState(duration);
   const [isActive, setIsActive] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const nudgeTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -93,13 +95,20 @@ export default function FocusModePage() {
       description: message,
     });
   };
+  
+  const handleStartSession = () => {
+    setTime(duration);
+    setSessionStarted(true);
+    setIsActive(true);
+    showMotivationNudge(); // show one at the start
+    nudgeTimerRef.current = setInterval(showMotivationNudge, NUDGE_INTERVAL);
+  }
 
   const toggleTimer = () => {
     if(isComplete) return;
     setIsActive(!isActive);
     if (!isActive) {
-        // Starting timer
-        showMotivationNudge(); // show one at the start
+        // Resuming timer
         nudgeTimerRef.current = setInterval(showMotivationNudge, NUDGE_INTERVAL);
     } else {
         // Pausing timer
@@ -112,8 +121,14 @@ export default function FocusModePage() {
     if (nudgeTimerRef.current) clearInterval(nudgeTimerRef.current);
     setIsActive(false);
     setIsComplete(false);
-    setTime(FOCUS_DURATION);
+    setSessionStarted(false);
+    setTime(duration);
   };
+  
+  const selectDuration = (minutes: number) => {
+    setDuration(minutes * 60);
+    setTime(minutes * 60);
+  }
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -121,16 +136,23 @@ export default function FocusModePage() {
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
 
-  const progress = (time / FOCUS_DURATION) * 100;
+  const progress = (time / duration) * 100;
+
+  const durationOptions = [15, 25, 45, 60];
 
   return (
-    <div className="flex justify-center items-center h-[70vh]">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="w-full max-w-md text-center shadow-2xl">
+    <div className="flex flex-col items-center justify-center h-full gap-8">
+        <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight font-headline">Focus Session</h1>
+            <p className="text-muted-foreground mt-2">Minimize distractions and get in the zone.</p>
+        </div>
+        <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full"
+        >
+        <Card className="w-full max-w-md text-center shadow-2xl mx-auto">
           <CardContent className="p-8">
             <AnimatePresence mode="wait">
               {isComplete ? (
@@ -147,14 +169,14 @@ export default function FocusModePage() {
                           <RotateCw className="mr-2 h-4 w-4" /> Start New Session
                       </Button>
                   </motion.div>
-              ) : (
+              ) : sessionStarted ? (
                   <motion.div 
                     key="timer"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-8 flex flex-col items-center"
                   >
-                      <h2 className="text-2xl font-semibold text-muted-foreground">Focus Mode</h2>
+                      <h2 className="text-2xl font-semibold text-muted-foreground">Time Remaining</h2>
                       <div className="relative flex items-center justify-center">
                         <ProgressRing progress={progress} />
                         <div className="absolute font-mono text-5xl sm:text-6xl font-bold text-foreground" style={{ fontVariantNumeric: 'tabular-nums' }}>
@@ -164,13 +186,37 @@ export default function FocusModePage() {
                       <div className="flex gap-4 justify-center">
                           <Button onClick={toggleTimer} size="lg" className="w-36">
                               {isActive ? <Pause className="mr-2" /> : <Play className="mr-2" />}
-                              {isActive ? 'Pause' : 'Start'}
+                              {isActive ? 'Pause' : 'Resume'}
                           </Button>
                           <Button onClick={resetTimer} variant="secondary" size="lg">
                               <RotateCw className="mr-2" /> Reset
                           </Button>
                       </div>
                   </motion.div>
+              ) : (
+                 <motion.div 
+                    key="setup"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-8 flex flex-col items-center"
+                 >
+                    <h2 className="text-2xl font-semibold text-muted-foreground">Select Duration</h2>
+                     <div className="flex flex-wrap gap-3 justify-center">
+                        {durationOptions.map(min => (
+                           <Button 
+                             key={min} 
+                             variant={duration === min * 60 ? 'default' : 'outline'}
+                             onClick={() => selectDuration(min)}
+                             className="w-24 h-16 text-lg"
+                           >
+                             {min} min
+                           </Button>
+                        ))}
+                    </div>
+                    <Button onClick={handleStartSession} size="lg" className="w-full">
+                       <Play className="mr-2"/> Start Focus Session
+                    </Button>
+                 </motion.div>
               )}
             </AnimatePresence>
           </CardContent>
