@@ -157,14 +157,13 @@ const HeroSection = () => (
         initial="hidden"
         animate="visible"
         variants={sectionVariants}
-        className="relative w-full max-w-2xl mx-auto"
+        className="relative w-full max-w-2xl mx-auto aspect-video"
       >
          <Image
             src="https://storage.googleapis.com/project-spark-b97vo/static-assets/561b32f9-4614-41d3-827d-5c4a52033c48"
             alt="StudyWise AI Dashboard"
-            width={1200}
-            height={750}
-            className="rounded-2xl border bg-background/50 p-2 shadow-2xl shadow-blue-500/10"
+            fill
+            className="object-cover rounded-2xl border bg-background/50 p-2 shadow-2xl shadow-blue-500/10"
             priority
          />
       </motion.div>
