@@ -2,20 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarToggleButton,
-  SidebarSeparator,
-} from '@/components/ui/sidebar';
+import { Sidebar } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   LogOut,
@@ -31,7 +18,6 @@ import {
   Users,
   Target,
 } from 'lucide-react';
-import { Logo } from '@/components/logo';
 import AuthGuard from '@/components/auth-guard';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -45,8 +31,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Logo } from '@/components/logo';
 
-const navItems = [
+
+export const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ai-readiness', label: 'AI Readiness', icon: Target },
   { href: '/study-plan', label: 'My Plan', icon: CalendarCheck },
@@ -61,6 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
   const { setTheme, theme } = useTheme();
   const router = useRouter();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U';
@@ -71,54 +62,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setTheme(theme === 'light' ? 'dark' : 'light');
   }
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  }
+
   return (
     <AuthGuard>
-      <SidebarProvider>
-        <div className="flex min-h-screen">
-          <Sidebar>
-            <SidebarHeader className='p-4'>
-              <Logo />
-            </SidebarHeader>
-            <SidebarContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                          asChild
-                          isActive={pathname.startsWith(item.href)}
-                          tooltip={item.label}
-                      >
-                          <Link href={item.href}>
-                          <item.icon className="h-5 w-5" />
-                          <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">{item.label}</span>
-                          </Link>
-                      </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip="Settings">
-                    <Link href="/settings">
-                      <Settings className="h-5 w-5" />
-                      <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Settings</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarToggleButton />
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarFooter>
-          </Sidebar>
-          <SidebarInset>
-            <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
-                <div className="flex items-center gap-4">
-                   <SidebarTrigger className="md:hidden"/>
-                   <h1 className="text-xl font-semibold hidden md:block">Dashboard</h1>
-                </div>
+      <div className="flex min-h-screen">
+          <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+          
+          <div className={cn(
+              "flex-1 flex flex-col transition-all duration-300 ease-in-out",
+              isSidebarCollapsed ? "md:ml-20" : "md:ml-60"
+          )}>
+            <header className="sticky top-0 z-30 flex h-16 items-center justify-end gap-4 border-b bg-background/95 backdrop-blur-sm px-4 sm:px-6">
                 <div className="flex items-center gap-2 sm:gap-4 ml-auto">
                   <Button variant="ghost" size="icon" onClick={toggleTheme}>
                     <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"/>
@@ -169,9 +126,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
             </header>
             <main className="flex-1 p-4 sm:p-6">{children}</main>
-          </SidebarInset>
+          </div>
         </div>
-      </SidebarProvider>
     </AuthGuard>
   );
 }
