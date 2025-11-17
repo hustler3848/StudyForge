@@ -30,7 +30,7 @@ import {
   type GenerateStudyPlanOutput,
 } from "@/ai/flows/smart-study-plan";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const studyPlanSchema = z.object({
@@ -73,6 +73,23 @@ const getColorForSubject = (subject: string) => {
   return subjectColors.default;
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
 
 export default function StudyPlanPage() {
   const { user, updateUserProfile } = useAuth();
@@ -121,8 +138,13 @@ export default function StudyPlanPage() {
   }
 
   return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="lg:col-span-1 space-y-6">
+      <motion.div
+        className="grid gap-6 lg:grid-cols-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="lg:col-span-1 space-y-6" variants={itemVariants}>
           <Card>
             <CardHeader>
               <CardTitle className="font-headline text-xl md:text-2xl">
@@ -177,16 +199,17 @@ export default function StudyPlanPage() {
               </Form>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
-        <div className="lg:col-span-1">
+        <motion.div className="lg:col-span-1" variants={itemVariants}>
           <Card>
             <CardHeader>
               <CardTitle className="font-headline text-xl md:text-2xl">Your Generated Plan</CardTitle>
             </CardHeader>
             <CardContent>
-             {error && (
-                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="my-4">
+             <AnimatePresence mode="wait">
+              {error && (
+                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="my-4">
                   <Alert variant="destructive">
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>{error}</AlertDescription>
@@ -194,7 +217,12 @@ export default function StudyPlanPage() {
                 </motion.div>
               )}
               {generatedPlan ? (
-                  <div className="space-y-6">
+                  <motion.div
+                    key="plan"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                  >
                     <div>
                         <h3 className="font-semibold mb-2">Daily Session Focus</h3>
                         <ul className="space-y-2">
@@ -225,15 +253,21 @@ export default function StudyPlanPage() {
                         <h3 className="font-semibold mb-2">Weekly Timetable</h3>
                         <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-secondary p-4 rounded-lg">{generatedPlan.weeklyTimetable}</p>
                     </div>
-                  </div>
+                  </motion.div>
               ) : (
-                <div className="text-center text-muted-foreground py-16">
+                <motion.div
+                    key="placeholder"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center text-muted-foreground py-16"
+                >
                     <p>Your AI-generated study plan will appear here.</p>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
   );
 }
