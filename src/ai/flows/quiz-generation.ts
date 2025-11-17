@@ -82,7 +82,7 @@ The JSON output MUST STRICTLY follow this structure:
     const userPrompt = `Generate a 5-question quiz on the topic: "${input.topic}"`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-70b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
