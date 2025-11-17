@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -158,13 +159,14 @@ const HeroSection = () => (
         variants={sectionVariants}
         className="relative w-full max-w-2xl mx-auto"
       >
-         <div className="relative h-96 w-full flex items-center justify-center overflow-hidden rounded-2xl border bg-background/50 p-8 shadow-lg shadow-sky-200/50 dark:shadow-sky-900/50">
-            <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-200/50 dark:bg-blue-500/10 rounded-full filter blur-3xl opacity-80 animate-blob"></div>
-            <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-sky-200/50 dark:bg-sky-500/10 rounded-full filter blur-3xl opacity-80 animate-blob animation-delay-2000"></div>
-            <span className="text-muted-foreground/80">
-                StudyWise AI Dashboard Mockup
-            </span>
-        </div>
+         <Image
+            src="https://storage.googleapis.com/project-spark-b97vo/static-assets/561b32f9-4614-41d3-827d-5c4a52033c48"
+            alt="StudyWise AI Dashboard"
+            width={1200}
+            height={750}
+            className="rounded-2xl border bg-background/50 p-2 shadow-2xl shadow-blue-500/10"
+            priority
+         />
       </motion.div>
     </div>
   </section>
@@ -495,3 +497,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
