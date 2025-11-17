@@ -76,9 +76,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <div className="flex min-h-screen">
           <Sidebar>
-            <SidebarHeader className='p-4 flex items-center justify-between'>
+            <SidebarHeader className='p-4'>
               <Logo />
-              <SidebarToggleButton />
             </SidebarHeader>
             <SidebarContent>
               <SidebarMenu>
@@ -99,7 +98,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
             </SidebarContent>
             <SidebarFooter>
-              <SidebarSeparator />
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Settings">
@@ -108,6 +106,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Settings</span>
                     </Link>
                   </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarToggleButton />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarFooter>

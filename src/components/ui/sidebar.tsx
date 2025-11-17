@@ -242,25 +242,23 @@ Sidebar.displayName = "Sidebar"
 
 const SidebarToggleButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button">
->(({ className, ...props }, ref) => {
+  React.ComponentProps<"button"> & { asChild?: boolean }
+>(({ className, asChild, ...props }, ref) => {
   const { toggleSidebar, state } = useSidebar()
+  const Comp = asChild ? Slot : 'button'
   return (
-    <Button
-      ref={ref}
-      variant="ghost"
-      size="icon"
-      className={cn(
-        "rounded-md h-8 w-8",
-        "transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0",
-        "group-data-[state=collapsed]/sidebar-wrapper:opacity-100",
-         "hidden md:inline-flex"
-      )}
-      onClick={toggleSidebar}
-      {...props}
+    <Comp
+        ref={ref}
+        className={cn(
+            "flex w-full items-center gap-3 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-all duration-150 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!p-3",
+        className
+        )}
+        onClick={toggleSidebar}
+        {...props}
     >
-      <PanelLeft className="h-5 w-5" />
-    </Button>
+        <ChevronLeft className={cn("h-5 w-5 shrink-0 transition-transform duration-300", state === "collapsed" && "rotate-180")} />
+        <span className="transition-opacity duration-150 ease-in-out group-data-[collapsible=icon]:opacity-0">Collapse</span>
+    </Comp>
   )
 })
 SidebarToggleButton.displayName = "SidebarToggleButton"
@@ -379,7 +377,7 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-4 mt-auto", className)}
+      className={cn("flex flex-col gap-2 p-2 mt-auto border-t", className)}
       {...props}
     />
   )
