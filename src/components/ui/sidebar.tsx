@@ -142,7 +142,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper relative flex min-h-svh w-full",
+              "group/sidebar-wrapper",
               className
             )}
             ref={ref}
@@ -252,8 +252,8 @@ const SidebarToggleButton = React.forwardRef<
       size="icon"
       className={cn(
         "absolute top-1/2 -translate-y-1/2 rounded-full h-8 w-8 bg-background border shadow-md hover:bg-accent z-50",
-        "group-data-[side=left]/sidebar-wrapper:-right-4",
-        "group-data-[side=right]/sidebar-wrapper:-left-4",
+        "group-data-[side=left]/sidebar-wrapper:right-0 group-data-[side=left]/sidebar-wrapper:translate-x-1/2",
+        "group-data-[side=right]/sidebar-wrapper:left-0 group-data-[side=right]/sidebar-wrapper:-translate-x-1/2",
         "group-data-[state=expanded]/sidebar-wrapper:rotate-180",
          "hidden md:inline-flex"
       )}
@@ -330,9 +330,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 w-full flex-col bg-background transition-all duration-300 ease-in-out",
-        "group-data-[state=expanded]/sidebar-wrapper:md:ml-[--sidebar-width]",
-        "group-data-[state=collapsed]/sidebar-wrapper:md:ml-[--sidebar-width-icon]",
+        "flex-1 w-full flex-col",
         className
       )}
       {...props}
