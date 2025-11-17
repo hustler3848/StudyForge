@@ -115,7 +115,6 @@ export default function LoginPage() {
                 className={cn(
                   "w-full text-white font-bold bg-gradient-to-r from-indigo-500 to-blue-400 hover:from-indigo-600 hover:to-blue-500"
                 )}
-                disabled
               >
                 Login
               </Button>
